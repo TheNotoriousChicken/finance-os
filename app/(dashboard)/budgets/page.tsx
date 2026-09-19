@@ -12,7 +12,7 @@ export default async function BudgetsPage() {
   const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
 
   const [budget, spentData] = await Promise.all([
-    prisma.budget.findFirst({ where: { month: cardMonth } }),
+    prisma.budget.findFirst(),
     prisma.transaction.aggregate({
       where: { type: 'EXPENSE', date: { gte: startOfMonth, lte: endOfMonth } },
       _sum: { amountPaise: true }
