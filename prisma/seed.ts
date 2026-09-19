@@ -149,7 +149,7 @@ async function main() {
       type: 'CREDIT_CARD',
       bankName: 'HDFC Bank',
       last4Digits: '5678',
-      limitPaise: 5_00_000, // ₹5,000
+      limitPaise: 4_50_000, // ₹4,500
       outstandingPaise: 0,
       statementBalancePaise: 0,
       statementDate: 15,
