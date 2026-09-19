@@ -4,7 +4,7 @@
     "private": true,
     "scripts": {
         "dev": "concurrently \"npx @tailwindcss/cli -i ./app/tailwind-input.css -o ./app/tailwind-built.css --watch\" \"next dev\"",
-        "build": "npx @tailwindcss/cli -i ./app/tailwind-input.css -o ./app/tailwind-built.css && next build",
+        "build": "prisma generate && npx @tailwindcss/cli -i ./app/tailwind-input.css -o ./app/tailwind-built.css && next build",
         "start": "next start",
         "lint": "eslint",
         "db:generate": "prisma generate",
