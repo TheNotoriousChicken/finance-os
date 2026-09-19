@@ -118,15 +118,7 @@ export default async function AccountsPage() {
         <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
           <p className="text-[11px] font-semibold text-[#52525B] uppercase tracking-widest px-1">Other</p>
           {otherMethods.map(pm => (
-            <div key={pm.id} className="minimal-card rounded-xl px-5 py-4 flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${pm.color ?? '#ffffff'}12` }}>
-                <Landmark size={15} style={{ color: pm.color ?? '#A1A1AA' }} />
-              </div>
-              <div className="flex-1">
-                <p className="text-[13.5px] font-medium text-white">{pm.name}</p>
-                <p className="text-[11.5px] text-[#52525B]">{pm.type.replaceAll('_', ' ')}</p>
-              </div>
-            </div>
+            <BankBalanceRow key={pm.id} account={pm} />
           ))}
         </div>
       )}
