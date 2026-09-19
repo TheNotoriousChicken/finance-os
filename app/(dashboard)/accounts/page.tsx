@@ -95,18 +95,18 @@ export default async function AccountsPage() {
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "12px" }}>
                   <div>
                     <p className="text-[11px] text-[#52525B] uppercase tracking-wider">Outstanding</p>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <p className="text-[15px] font-bold text-white">{formatPaise(card.outstandingPaise)}</p>
-                      {card.outstandingPaise > 0 && (
-                        <PayBillButton cardId={card.id} />
-                      )}
-                    </div>
+                    <p className="text-[15px] font-bold text-white mt-0.5">{formatPaise(card.outstandingPaise)}</p>
                   </div>
                   <div>
                     <p className="text-[11px] text-[#52525B] uppercase tracking-wider">Available</p>
                     <p className="text-[15px] font-bold text-[#00D68F] mt-0.5">{formatPaise(available)}</p>
                   </div>
                 </div>
+                {card.outstandingPaise > 0 && (
+                  <div className="mt-4 flex justify-end border-t border-[#27272A] pt-4">
+                    <PayBillButton cardId={card.id} />
+                  </div>
+                )}
               </div>
             );
           })}
