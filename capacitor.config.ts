@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'Finance OS',
   webDir: 'public',
   server: {
-    url: 'https://finance-os.vercel.app', // IMPORTANT: Replace with actual URL if different
+    url: 'https://finance-os-blue-eight.vercel.app', // IMPORTANT: Replace with actual URL if different
     cleartext: true
   }
 };
