@@ -1,10 +1,10 @@
 
 import type { Metadata, Viewport } from 'next';
-import { Inter } from 'next/font/google';
+
 
 import './tailwind-built.css';
 
-const inter = Inter({ subsets: ['latin'] });
+
 
 export const metadata: Metadata = {
   title: 'Finance OS',
@@ -31,7 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }
         `}} />
       </head>
-      <body className={`${inter.className} antialiased text-[#FAFAFA]`}>
+      <body className="font-sans antialiased text-[#FAFAFA]">
         {children}
       </body>
     </html>
