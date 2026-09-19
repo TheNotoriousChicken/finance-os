@@ -2,7 +2,8 @@ export const dynamic = 'force-dynamic';
 import { prisma } from '@/lib/prisma';
 import { formatPaise } from '@/lib/money';
 import { calculateCombinedUtilization } from '@/lib/engine/utilization';
-import { CreditCard, Landmark } from 'lucide-react';
+import { CreditCard, Landmark, CheckCircle2 } from 'lucide-react';
+import { payCreditCardBillAction } from '@/app/actions/accounts';
 
 export default async function AccountsPage() {
   const paymentMethods = await prisma.paymentMethod.findMany({
@@ -93,7 +94,16 @@ export default async function AccountsPage() {
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "12px" }}>
                   <div>
                     <p className="text-[11px] text-[#52525B] uppercase tracking-wider">Outstanding</p>
-                    <p className="text-[15px] font-bold text-white mt-0.5">{formatPaise(card.outstandingPaise)}</p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <p className="text-[15px] font-bold text-white">{formatPaise(card.outstandingPaise)}</p>
+                      {card.outstandingPaise > 0 && (
+                        <form action={payCreditCardBillAction.bind(null, card.id)}>
+                          <button type="submit" className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider transition-colors" style={{ background: 'rgba(0, 214, 143, 0.1)', color: '#00D68F' }}>
+                            <CheckCircle2 size={10} /> Pay Bill
+                          </button>
+                        </form>
+                      )}
+                    </div>
                   </div>
                   <div>
                     <p className="text-[11px] text-[#52525B] uppercase tracking-wider">Available</p>
