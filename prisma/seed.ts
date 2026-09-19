@@ -145,7 +145,7 @@ async function main() {
     update: {},
     create: {
       id: 2,
-      name: 'FD backed cc',
+      name: 'ZET FD Backed',
       type: 'CREDIT_CARD',
       bankName: 'HDFC Bank',
       last4Digits: '5678',
