@@ -22,6 +22,8 @@
     },
     "dependencies": {
         "@ai-sdk/anthropic": "^4.0.54",
+        "@capacitor/android": "^8.5.2",
+        "@capacitor/core": "^8.5.2",
         "@google/genai": "^2.23.0",
         "@prisma/client": "^5.22.0",
         "@tailwindcss/postcss": "^4.3.3",
@@ -44,6 +46,7 @@
         "zod": "^4.6.5"
     },
     "devDependencies": {
+        "@capacitor/cli": "^8.5.2",
         "@types/bcryptjs": "^2.4.6",
         "@types/node": "^20",
         "@types/react": "^19",
