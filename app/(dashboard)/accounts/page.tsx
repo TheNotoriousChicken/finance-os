@@ -4,6 +4,7 @@ import { formatPaise } from '@/lib/money';
 import { calculateCombinedUtilization } from '@/lib/engine/utilization';
 import { CreditCard, Landmark, CheckCircle2 } from 'lucide-react';
 import { PayBillButton } from '@/components/transactions/PayBillButton';
+import { BankBalanceRow } from '@/components/transactions/BankBalanceRow';
 
 export default async function AccountsPage() {
   const paymentMethods = await prisma.paymentMethod.findMany({

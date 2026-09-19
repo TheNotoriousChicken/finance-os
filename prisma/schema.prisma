@@ -51,6 +51,7 @@ model PaymentMethod {
   last4Digits           String?
   limitPaise            Int?
   outstandingPaise      Int           @default(0)
+  balancePaise          Int           @default(0)
   statementBalancePaise Int           @default(0)
   statementDate         Int?          // day of month 1–28
   dueDate               Int?          // day of month 1–28
