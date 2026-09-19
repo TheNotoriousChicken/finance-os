@@ -96,6 +96,15 @@ export function QuickEntrySheet({ isOpen, onClose, categories, paymentMethods }:
 
   if (!isOpen) return null;
 
+  
+  function handleQuickSalary() {
+    setType('INCOME');
+    setMerchant('Salary Credited');
+    const incCat = categories.find(c => c.name.toLowerCase() === 'income');
+    if (incCat) setCategoryId(incCat.id.toString());
+    setTimeout(() => amountRef.current?.focus(), 50);
+  }
+
   async function handleAiParse() {
     setError('');
     startAiTransition(async () => {
@@ -215,6 +224,18 @@ export function QuickEntrySheet({ isOpen, onClose, categories, paymentMethods }:
             </div>
           ) : (
             <form action={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "24px" }} className="p-5 ">
+
+              <div className="flex justify-end mb-1">
+                <button 
+                  type="button" 
+                  onClick={handleQuickSalary}
+                  className="text-[11px] font-bold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1"
+                  style={{ background: 'rgba(0, 214, 143, 0.15)', color: '#00D68F' }}
+                >
+                  <Sparkles size={12} /> Auto-fill Salary
+                </button>
+              </div>
+
               {error && (
                 <div className="p-3 rounded-xl text-[13px]" style={{ background: 'rgba(255,71,87,0.08)', border: '1px solid rgba(255,71,87,0.2)', color: '#FF4757' }}>
                   {error}
