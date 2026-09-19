@@ -1,0 +1,356 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─── Auth / Profile ───────────────────────────────────────────────────────────
+
+model UserProfile {
+  id                 Int      @id @default(1)
+  displayName        String   @default("Me")
+  passwordHash       String
+  monthlySalaryPaise Int      @default(0)
+  cardYearStartDate  String?  // ISO date "YYYY-MM-DD" for fee-waiver tracking
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+// ─── Settings ────────────────────────────────────────────────────────────────
+
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+// ─── Accounts ────────────────────────────────────────────────────────────────
+
+model Account {
+  id           Int           @id @default(autoincrement())
+  name         String
+  type         String        // SAVINGS | CURRENT | WALLET | CASH
+  bankName     String?
+  balancePaise Int           @default(0)
+  isActive     Boolean       @default(true)
+  createdAt    DateTime      @default(now())
+  transactions Transaction[]
+}
+
+// ─── Payment Methods ─────────────────────────────────────────────────────────
+
+model PaymentMethod {
+  id                    Int           @id @default(autoincrement())
+  name                  String
+  type                  String        // CREDIT_CARD | DEBIT_CARD | UPI | CASH | OTHER
+  bankName              String?
+  last4Digits           String?
+  limitPaise            Int?
+  outstandingPaise      Int           @default(0)
+  statementBalancePaise Int           @default(0)
+  statementDate         Int?          // day of month 1–28
+  dueDate               Int?          // day of month 1–28
+  annualFeePaise        Int?
+  feeWaiverTargetPaise  Int?
+  rewardRuleSetId       String?       // e.g. "MONEYBACK_PLUS"
+  isRewardEligible      Boolean       @default(false)
+  cardYearStartDate     String?       // "YYYY-MM-DD"
+  isActive              Boolean       @default(true)
+  color                 String?       // hex color for card display
+  createdAt             DateTime      @default(now())
+  transactions          Transaction[]
+  rewards               Reward[]
+}
+
+// ─── Categories ──────────────────────────────────────────────────────────────
+
+model Category {
+  id              Int           @id @default(autoincrement())
+  name            String        @unique
+  icon            String?
+  color           String?
+  isSystem        Boolean       @default(false)
+  displayOrder    Int           @default(0)
+  subcategories   Subcategory[]
+  transactions    Transaction[]
+  budgetCategories BudgetCategory[]
+}
+
+model Subcategory {
+  id           Int           @id @default(autoincrement())
+  name         String
+  categoryId   Int
+  category     Category      @relation(fields: [categoryId], references: [id])
+  transactions Transaction[]
+
+  @@unique([name, categoryId])
+}
+
+// ─── Merchants ───────────────────────────────────────────────────────────────
+
+model Merchant {
+  id               Int             @id @default(autoincrement())
+  normalizedName   String          @unique
+  displayName      String
+  defaultCategoryId Int?
+  is10xPartner     Boolean         @default(false)
+  rewardRuleId     String?
+  transactions     Transaction[]
+  aliases          MerchantAlias[]
+}
+
+model MerchantAlias {
+  id               Int       @id @default(autoincrement())
+  normalizedString String    @unique
+  merchantId       Int?
+  merchant         Merchant? @relation(fields: [merchantId], references: [id])
+  categoryId       Int?
+  subcategoryId    Int?
+  confidenceScore  Int       @default(50)
+  confirmationCount Int      @default(0)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+// ─── Transactions ─────────────────────────────────────────────────────────────
+
+model Transaction {
+  id                  Int            @id @default(autoincrement())
+  date                DateTime
+  amountPaise         Int
+  type                String         // EXPENSE | INCOME | TRANSFER | REFUND
+  merchantId          Int?
+  merchant            Merchant?      @relation(fields: [merchantId], references: [id])
+  merchantRaw         String?
+  categoryId          Int?
+  category            Category?      @relation(fields: [categoryId], references: [id])
+  subcategoryId       Int?
+  subcategory         Subcategory?   @relation(fields: [subcategoryId], references: [id])
+  paymentMethodId     Int?
+  paymentMethod       PaymentMethod? @relation(fields: [paymentMethodId], references: [id])
+  accountId           Int?
+  account             Account?       @relation(fields: [accountId], references: [id])
+  notes               String?        // AES-256-GCM encrypted
+  aiConfidence        Int?
+  aiClassificationId  Int?
+  isRefunded          Boolean        @default(false)
+  refundStatus        String?        // PENDING | POSTED
+  parentTransactionId Int?
+  cashpointsEarned    Int            @default(0)
+  isExcluded          Boolean        @default(false)
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+
+  refunds           Transaction[]  @relation("RefundRelation")
+  parentTransaction Transaction?   @relation("RefundRelation", fields: [parentTransactionId], references: [id])
+  reward            Reward?
+  auditLogs         AuditLog[]
+
+  @@index([date])
+  @@index([merchantId])
+  @@index([paymentMethodId])
+  @@index([categoryId])
+}
+
+// ─── Rewards ─────────────────────────────────────────────────────────────────
+
+model RewardRule {
+  id                  String    @id
+  ruleSetId           String
+  description         String
+  merchantId          Int?
+  categoryName        String?
+  mcc                 String?
+  multiplier          Int?
+  pointsPerXPaise     Int?
+  pointsEarned        Int?
+  monthlyCapPoints    Int?
+  grocerySubCapPoints Int?
+  eligibleTypes       String?   // JSON array
+  excludedCategories  String?   // JSON array
+  effectiveFrom       DateTime?
+  effectiveTo         DateTime?
+  source              String?
+  sourceUrl           String?
+  lastVerifiedDate    DateTime?
+  isUnverified        Boolean   @default(false)
+  isActive            Boolean   @default(true)
+}
+
+model Reward {
+  id              Int           @id @default(autoincrement())
+  transactionId   Int           @unique
+  transaction     Transaction   @relation(fields: [transactionId], references: [id])
+  paymentMethodId Int
+  paymentMethod   PaymentMethod @relation(fields: [paymentMethodId], references: [id])
+  ruleId          String
+  cardMonth       String        // "2026-09"
+  cashpointsEarned Int
+  isReversed      Boolean       @default(false)
+  reversedAt      DateTime?
+  createdAt       DateTime      @default(now())
+
+  @@index([paymentMethodId, cardMonth])
+}
+
+model RewardRedemption {
+  id              Int      @id @default(autoincrement())
+  paymentMethodId Int
+  cashpointsUsed  Int
+  valuePaise      Int
+  channel         String   // STATEMENT_CREDIT | CATALOGUE | SMARTBUY_TRAVEL
+  redeemedAt      DateTime
+  notes           String?
+}
+
+// ─── Budgets ─────────────────────────────────────────────────────────────────
+
+model Budget {
+  id             Int              @id @default(autoincrement())
+  month          String           // "2026-09"
+  totalLimitPaise Int
+  categories     BudgetCategory[]
+}
+
+model BudgetCategory {
+  id         Int      @id @default(autoincrement())
+  budgetId   Int
+  budget     Budget   @relation(fields: [budgetId], references: [id])
+  categoryId Int
+  category   Category @relation(fields: [categoryId], references: [id])
+  limitPaise Int
+
+  @@unique([budgetId, categoryId])
+}
+
+// ─── EMI ─────────────────────────────────────────────────────────────────────
+
+model EmiPlan {
+  id                  Int              @id @default(autoincrement())
+  description         String
+  merchantName        String?
+  originalAmountPaise Int
+  downPaymentPaise    Int              @default(0)
+  financedAmountPaise Int
+  tenureMonths        Int
+  interestRatePct     Float
+  rateType            String           // FLAT | REDUCING
+  processingFeePaise  Int              @default(0)
+  gstPaise            Int              @default(0)
+  startDate           DateTime
+  emiAmountPaise      Int
+  status              String           @default("ACTIVE")
+  createdAt           DateTime         @default(now())
+  installments        EmiInstallment[]
+}
+
+model EmiInstallment {
+  id             Int      @id @default(autoincrement())
+  emiPlanId      Int
+  emiPlan        EmiPlan  @relation(fields: [emiPlanId], references: [id])
+  installmentNo  Int
+  dueDate        DateTime
+  amountPaise    Int
+  principalPaise Int
+  interestPaise  Int
+  status         String   @default("PENDING")
+  paidAt         DateTime?
+}
+
+// ─── Recurring & Goals ────────────────────────────────────────────────────────
+
+model RecurringTransaction {
+  id                  Int       @id @default(autoincrement())
+  merchantId          Int?
+  merchantName        String
+  avgAmountPaise      Int
+  amountTolerancePct  Float     @default(10.0)
+  occurrenceCount     Int       @default(0)
+  userConfirmed       Boolean   @default(false)
+  isActive            Boolean   @default(true)
+  nextExpectedDate    DateTime?
+}
+
+model Goal {
+  id           Int       @id @default(autoincrement())
+  name         String
+  targetPaise  Int
+  currentPaise Int       @default(0)
+  targetDate   DateTime?
+  isAchieved   Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+}
+
+// ─── AI Cache ────────────────────────────────────────────────────────────────
+
+model AiClassification {
+  id         Int      @id @default(autoincrement())
+  inputHash  String   @unique
+  rawInput   String
+  result     String   // JSON blob
+  model      String
+  confidence Int
+  merchantId Int?
+  createdAt  DateTime @default(now())
+
+  @@index([merchantId])
+}
+
+// ─── Audit Log ───────────────────────────────────────────────────────────────
+
+model AuditLog {
+  id            Int         @id @default(autoincrement())
+  transactionId Int
+  transaction   Transaction @relation(fields: [transactionId], references: [id])
+  field         String
+  oldValue      String?
+  newValue      String?
+  changedAt     DateTime    @default(now())
+
+  @@index([transactionId])
+}
+
+// ─── Notifications ────────────────────────────────────────────────────────────
+
+model Notification {
+  id          Int       @id @default(autoincrement())
+  type        String    // DUE_DATE | EMI_DUE | BUDGET_LIMIT | MILESTONE | FEE_WAIVER
+  title       String
+  body        String
+  relatedId   Int?
+  dueDate     DateTime?
+  isRead      Boolean   @default(false)
+  isDismissed Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+}
+
+
+// ─── Wealth & Investments ──────────────────────────────────────────────────
+
+model Asset {
+  id                   Int                 @id @default(autoincrement())
+  type                 String              // STOCK, MUTUAL_FUND, CRYPTO, FD, REAL_ESTATE
+  name                 String
+  ticker               String?             // e.g. RELIANCE.NS, BTC-USD
+  quantity             Float               
+  averageBuyPricePaise Int                 
+  currentPricePaise    Int                 
+  currency             String              @default("INR")
+  lastUpdated          DateTime            @default(now())
+  createdAt            DateTime            @default(now())
+  priceHistory         AssetPriceHistory[]
+}
+
+model AssetPriceHistory {
+  id         Int      @id @default(autoincrement())
+  assetId    Int
+  asset      Asset    @relation(fields: [assetId], references: [id])
+  pricePaise Int
+  date       DateTime @default(now())
+
+  @@index([assetId])
+}

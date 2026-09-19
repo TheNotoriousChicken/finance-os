@@ -1,0 +1,8 @@
+@import "tailwindcss";
+@import "./globals.css";
+
+@source "../";
+
+@theme {
+  --font-sans: "Nexa", system-ui, sans-serif;
+}

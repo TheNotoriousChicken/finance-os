@@ -1,0 +1,145 @@
+
+
+
+
+@font-face {
+  font-family: "Nexa";
+  src: url("/fonts/Nexa-Bold.woff2") format("woff2"),
+       url("/fonts/Nexa-Bold.otf") format("opentype"),
+       url("/fonts/Nexa-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Nexa";
+  src: url("/fonts/Nexa-Regular.woff2") format("woff2"),
+       url("/fonts/Nexa-Regular.otf") format("opentype"),
+       url("/fonts/Nexa-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+
+:root {
+  --color-bg: #050505;
+  --card-bg: rgba(12, 12, 14, 0.85);
+  --card-border: rgba(255, 255, 255, 0.07);
+  --card-border-hover: rgba(255, 255, 255, 0.14);
+  --accent-green: #00D68F;
+  --accent-gold: #FFD700;
+  --accent-blue: #4D9EF7;
+  --accent-red: #FF4757;
+  --text-primary: #FAFAFA;
+  --text-secondary: #A1A1AA;
+  --text-muted: #52525B;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--color-bg);
+  background-image:
+    radial-gradient(ellipse 80% 60% at 50% -20%, rgba(255, 255, 255, 0.035) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 40% at 80% 80%, rgba(77, 158, 247, 0.04) 0%, transparent 60%);
+  color: var(--text-primary);
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@layer utilities {
+  .minimal-card {
+    background: var(--card-bg);
+    backdrop-filter: blur(32px) saturate(180%);
+    -webkit-backdrop-filter: blur(32px) saturate(180%);
+    border: 1px solid var(--card-border);
+    box-shadow:
+      0 1px 0 0 rgba(255, 255, 255, 0.04) inset,
+      0 8px 40px rgba(0, 0, 0, 0.6),
+      0 2px 8px rgba(0, 0, 0, 0.4);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .minimal-card:hover {
+    border-color: var(--card-border-hover);
+    box-shadow:
+      0 1px 0 0 rgba(255, 255, 255, 0.06) inset,
+      0 12px 50px rgba(0, 0, 0, 0.7),
+      0 2px 12px rgba(0, 0, 0, 0.5);
+  }
+
+  .premium-card {
+    background: linear-gradient(135deg, rgba(20, 20, 22, 0.95) 0%, rgba(10, 10, 12, 0.98) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow:
+      0 1px 0 0 rgba(255, 255, 255, 0.06) inset,
+      0 20px 60px rgba(0, 0, 0, 0.7);
+  }
+
+  .text-financial-large {
+    font-size: clamp(2.5rem, 6vw, 5rem);
+    line-height: 1;
+    letter-spacing: -0.05em;
+    font-weight: 700;
+  }
+
+  .text-gradient-white {
+    background: linear-gradient(135deg, #FFFFFF 0%, #E4E4E7 50%, #71717A 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-gradient-green {
+    background: linear-gradient(135deg, #00F0A8 0%, #00D68F 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .page-enter {
+    animation: fadeSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .animate-count-up {
+    animation: fadeSlideUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+::-webkit-scrollbar { width: 3px; height: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.08); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.14); }
+
+::selection { background: rgba(255, 255, 255, 0.15); color: #fff; }
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) opacity(0.4);
+  cursor: pointer;
+}
+
+select option {
+  background-color: #121214;
+  color: #FAFAFA;
+}
+
+
+input[type="number"]::-webkit-inner-spin-button, 
+input[type="number"]::-webkit-outer-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0; 
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
