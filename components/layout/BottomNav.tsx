@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, ArrowLeftRight, Star, BarChart3, Bot } from 'lucide-react';
+import { LayoutDashboard, ArrowLeftRight, Star, BarChart3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
@@ -9,7 +9,6 @@ const navItems = [
   { href: '/transactions', label: 'Txns', icon: ArrowLeftRight },
   { href: '/rewards', label: 'Rewards', icon: Star },
   { href: '/analytics', label: 'Analytics', icon: BarChart3 },
-  { href: '/ai', label: 'AI', icon: Bot },
 ];
 
 export function BottomNav() {
