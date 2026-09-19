@@ -11,8 +11,8 @@ export async function payCreditCardBillAction(cardId: number) {
     });
     revalidatePath('/accounts');
     revalidatePath('/');
-    return { success: true };
+    
   } catch (error: any) {
-    return { error: error.message };
+    console.error(error.message);
   }
 }
