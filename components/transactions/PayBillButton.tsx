@@ -10,8 +10,12 @@ export function PayBillButton({ cardId }: { cardId: number }) {
           await payCreditCardBillAction(cardId);
         }
       }}
-      className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider transition-colors" 
-      style={{ background: 'rgba(0, 214, 143, 0.1)', color: '#00D68F' }}
+      className="flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-lg uppercase tracking-wider transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-lg" 
+      style={{ 
+        background: 'linear-gradient(135deg, rgba(0, 214, 143, 0.15) 0%, rgba(0, 214, 143, 0.05) 100%)', 
+        color: '#00D68F',
+        border: '1px solid rgba(0, 214, 143, 0.3)'
+      }}
     >
       <CheckCircle2 size={10} /> Pay Bill
     </button>
