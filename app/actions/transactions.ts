@@ -5,6 +5,7 @@ import { toPaise } from '@/lib/money';
 import { revalidatePath } from 'next/cache';
 import { encrypt } from '@/lib/crypto';
 import { calculateCashPoints } from '@/lib/engine/rewards';
+import { z } from 'zod';
 
 export async function addTransactionAction(formData: FormData) {
   const amountStr = formData.get('amount') as string;
@@ -27,6 +28,14 @@ export async function addTransactionAction(formData: FormData) {
 
   const pmId = parseInt(paymentMethodId);
   const catId = parseInt(categoryId);
+
+  const schema = z.object({
+    amountStr: z.string().min(1),
+    amountPaise: z.number().int().positive(),
+    pmId: z.number().int().positive(),
+    catId: z.number().int().positive(),
+  });
+  schema.parse({ amountStr, amountPaise, pmId, catId });
 
   // 1. Resolve or create merchant
   const normalized = merchantStr.trim().toUpperCase();
@@ -141,6 +150,27 @@ export async function addTransactionAction(formData: FormData) {
     }
   }
 
+  // 5. Recurring detection
+  try {
+    const count = await prisma.transaction.count({ where: { merchantId: merchant.id, type: 'EXPENSE' } });
+    if (count >= 3) {
+      const allTxns = await prisma.transaction.findMany({
+        where: { merchantId: merchant.id, type: 'EXPENSE' },
+        orderBy: { date: 'desc' }, take: 6
+      });
+      const avgAmount = Math.round(allTxns.reduce((s, t) => s + t.amountPaise, 0) / allTxns.length);
+      const dates = allTxns.map(t => new Date(t.date).getTime()).sort((a,b) => a-b);
+      const avgGapMs = dates.length > 1 ? (dates[dates.length-1] - dates[0]) / (dates.length - 1) : 30 * 24 * 60 * 60 * 1000;
+      const nextExpected = new Date(dates[dates.length-1] + avgGapMs);
+      const existing = await prisma.recurringTransaction.findFirst({ where: { merchantId: merchant.id } });
+      if (existing) {
+        await prisma.recurringTransaction.update({ where: { id: existing.id }, data: { avgAmountPaise: avgAmount, occurrenceCount: count, nextExpectedDate: nextExpected } });
+      } else {
+        await prisma.recurringTransaction.create({ data: { merchantId: merchant.id, merchantName: merchant.displayName, avgAmountPaise: avgAmount, occurrenceCount: count, nextExpectedDate: nextExpected } });
+      }
+    }
+  } catch { /* non-critical */ }
+
   revalidatePath('/');
   revalidatePath('/transactions');
   revalidatePath('/accounts');
@@ -151,6 +181,7 @@ export async function addTransactionAction(formData: FormData) {
 }
 
 export async function deleteTransactionAction(txId: number) {
+  z.number().int().positive().parse(txId);
   const tx = await prisma.transaction.findUnique({ where: { id: txId } });
   if (!tx) throw new Error("Transaction not found");
 

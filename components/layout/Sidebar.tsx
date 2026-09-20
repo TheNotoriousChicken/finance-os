@@ -14,6 +14,7 @@ const navItems = [
   { href: "/analytics",   label: "Analytics",    icon: BarChart3        },
   { href: "/rewards",     label: "Rewards",      icon: Star             },
   { href: "/budgets",     label: "Budgets",      icon: Target           },
+  { href: "/goals",       label: "Goals",        icon: Target           },
   { href: "/emi",         label: "EMIs",         icon: TrendingUp       },
   { href: "/import",      label: "Import",       icon: Upload           },
   { href: "/settings",    label: "Settings",     icon: Settings         },

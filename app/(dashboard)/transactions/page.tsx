@@ -1,4 +1,3 @@
-
 export const dynamic = "force-dynamic";
 
 import { prisma } from "@/lib/prisma";
@@ -8,7 +7,8 @@ import { Suspense } from "react";
 import { formatDate } from "@/lib/utils";
 import {
   ArrowUpRight, ArrowDownLeft, ArrowLeftRight, ShoppingCart, Coffee,
-  Car, Home, Zap, HeartPulse, Plane, Monitor, GraduationCap, Smile, HelpCircle, ReceiptText
+  Car, Home, Zap, HeartPulse, Plane, Monitor, GraduationCap, Smile, HelpCircle, ReceiptText,
+  Download
 } from "lucide-react";
 import Link from "next/link";
 import { format, isToday, isYesterday } from "date-fns";
@@ -205,9 +205,18 @@ export default async function TransactionsPage({
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }} className=" max-w-3xl mx-auto pb-10 page-enter">
       <div className="flex flex-col gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-white">Transactions</h1>
-          <p className="text-sm text-[#52525B] mt-1">AI-powered search across all activity</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-white">Transactions</h1>
+            <p className="text-sm text-[#52525B] mt-1">AI-powered search across all activity</p>
+          </div>
+          <a
+            href="/api/export"
+            className="flex items-center gap-1.5 text-[12px] font-semibold text-[#52525B] hover:text-white transition-colors"
+          >
+            <Download size={14} />
+            Export CSV
+          </a>
         </div>
         <SearchBar />
       </div>

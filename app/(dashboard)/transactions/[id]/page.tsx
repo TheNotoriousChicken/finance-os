@@ -42,6 +42,8 @@ export default async function TransactionDetailPage({
     },
   });
 
+  const auditLogs = await prisma.auditLog.findMany({ where: { transactionId: transaction?.id || -1 }, orderBy: { changedAt: 'desc' } });
+
   if (!transaction) {
     notFound();
   }
@@ -120,6 +122,26 @@ export default async function TransactionDetailPage({
           <div className="pt-6 mt-6 border-t border-[#27272A] flex justify-center">
             <DeleteTransactionButton transactionId={transaction.id} />
           </div>
+
+          {auditLogs.length > 0 && (
+            <div className="pt-6 mt-6 border-t border-[#27272A]">
+              <p className="text-[11px] font-semibold text-[#52525B] uppercase tracking-widest mb-3">Change History</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {auditLogs.map(log => (
+                  <div key={log.id} className="flex items-start justify-between text-xs">
+                    <div>
+                      <span className="text-[#A1A1AA] font-medium">{log.field}</span>
+                      <span className="text-[#52525B] mx-1">changed from</span>
+                      <span className="text-white">{log.oldValue ?? 'empty'}</span>
+                      <span className="text-[#52525B] mx-1">to</span>
+                      <span className="text-white">{log.newValue ?? 'empty'}</span>
+                    </div>
+                    <span className="text-[#52525B] ml-4 shrink-0">{new Date(log.changedAt).toLocaleString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

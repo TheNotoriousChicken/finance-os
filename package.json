@@ -42,8 +42,7 @@
         "recharts": "^3.10.1",
         "tailwind-merge": "^3.7.0",
         "xlsx": "^0.18.5",
-        "yahoo-finance2": "^4.0.2",
-        "zod": "^4.6.5"
+        "yahoo-finance2": "^4.0.2"
     },
     "devDependencies": {
         "@capacitor/cli": "^8.5.2",
@@ -61,6 +60,7 @@
         "tsx": "^4.23.13",
         "typescript": "^5",
         "vite": "^8.3.0",
-        "vitest": "^5.0.1"
+        "vitest": "^5.0.1",
+        "zod": "^4.6.5"
     }
 }

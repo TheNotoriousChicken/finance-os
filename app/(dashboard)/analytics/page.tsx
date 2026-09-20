@@ -5,10 +5,19 @@ import { formatPaise } from '@/lib/money';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import { getMonthKey } from '@/lib/utils';
 import { MonthlyChart } from '@/components/analytics/MonthlyChart';
+import { MonthPicker } from '@/components/ui/MonthPicker';
+import { Suspense } from 'react';
 
-export default async function AnalyticsPage() {
+export default async function AnalyticsPage({ searchParams }: { searchParams: Promise<Record<string, string>> }) {
+  const params = await searchParams;
+  const now = new Date();
+  const monthKey = params.month || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  const [yr, mo] = monthKey.split('-').map(Number);
+  const startOfMonth = new Date(yr, mo - 1, 1);
+  const endOfMonth = new Date(yr, mo, 0, 23, 59, 59);
+
   const transactions = await prisma.transaction.findMany({
-    where: { type: 'EXPENSE' },
+    where: { type: 'EXPENSE', date: { gte: startOfMonth, lte: endOfMonth } },
     include: { category: true },
     orderBy: { date: 'asc' }
   });
@@ -41,7 +50,10 @@ export default async function AnalyticsPage() {
       {/* Header */}
       <div className="flex items-end justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-white">Analytics</h1>
+          <div className="flex items-center gap-4">
+            <h1 className="text-3xl font-bold tracking-tight text-white">Analytics</h1>
+            <Suspense fallback={null}><MonthPicker /></Suspense>
+          </div>
           <p className="text-sm text-[#52525B] mt-1">Your spending patterns at a glance</p>
         </div>
         {momChange !== 0 && (

@@ -1,12 +1,15 @@
 'use server';
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
 
 export async function saveBudgetAction(formData: FormData) {
   const month = formData.get('month') as string || '2026-09';
   const totalLimit = parseFloat(formData.get('totalLimit') as string) * 100;
   
   if (isNaN(totalLimit)) throw new Error('Invalid limit');
+  const schema = z.object({ totalLimit: z.number().positive() });
+  schema.parse({ totalLimit: parseFloat(formData.get('totalLimit') as string) });
 
   await prisma.budget.upsert({
     where: { id: 1 }, // simplified for single user

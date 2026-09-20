@@ -6,6 +6,8 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { DashboardClientWrapper } from "@/components/layout/DashboardClientWrapper";
 import { prisma } from "@/lib/prisma";
+import { getActiveNotifications } from "@/lib/engine/notifications";
+import { NotificationBell } from "@/components/layout/NotificationBell";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   try {
@@ -14,9 +16,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
     redirect("/login");
   }
 
-  const [categories, paymentMethods] = await Promise.all([
+  const [categories, paymentMethods, notifications] = await Promise.all([
     prisma.category.findMany({ orderBy: { displayOrder: "asc" } }),
     prisma.paymentMethod.findMany({ where: { isActive: true }, orderBy: { name: "asc" } }),
+    getActiveNotifications(),
   ]);
 
   return (
@@ -45,6 +48,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
           `}} />
           
           <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "32px" }}>
+            <div className="flex justify-end mb-4">
+              <NotificationBell notifications={notifications} />
+            </div>
             <DashboardClientWrapper categories={categories} paymentMethods={paymentMethods}>
               {children}
             </DashboardClientWrapper>
