@@ -110,17 +110,35 @@ export async function addTransactionAction(formData: FormData) {
     }
   }
 
-  // 4. Update outstanding balance
-  if (type === 'EXPENSE') {
-    await prisma.paymentMethod.update({
-      where: { id: pmId },
-      data: { outstandingPaise: { increment: amountPaise } }
-    });
-  } else if (type === 'REFUND') {
-    await prisma.paymentMethod.update({
-      where: { id: pmId },
-      data: { outstandingPaise: { decrement: amountPaise } }
-    });
+  // 4. Update balances properly based on account type
+  const account = await prisma.paymentMethod.findUnique({ where: { id: pmId } });
+  if (account) {
+    if (account.type === 'CREDIT_CARD') {
+      if (type === 'EXPENSE') {
+        await prisma.paymentMethod.update({
+          where: { id: pmId },
+          data: { outstandingPaise: { increment: amountPaise } }
+        });
+      } else if (type === 'REFUND' || type === 'INCOME') {
+        await prisma.paymentMethod.update({
+          where: { id: pmId },
+          data: { outstandingPaise: { decrement: amountPaise } }
+        });
+      }
+    } else {
+      // Asset accounts like UPI, CASH, DEBIT_CARD
+      if (type === 'EXPENSE') {
+        await prisma.paymentMethod.update({
+          where: { id: pmId },
+          data: { balancePaise: { decrement: amountPaise } }
+        });
+      } else if (type === 'REFUND' || type === 'INCOME') {
+        await prisma.paymentMethod.update({
+          where: { id: pmId },
+          data: { balancePaise: { increment: amountPaise } }
+        });
+      }
+    }
   }
 
   revalidatePath('/');
