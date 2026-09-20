@@ -33,7 +33,7 @@ export default function RewardsCalculatorPage() {
       setAiReason(res.reason);
       setMerchantStr(res.merchant); // Auto-correct to cleaned name
     } catch (e) {
-      alert("Failed to analyze with Gemini");
+      alert(`Failed to analyze with Gemini: ${e instanceof Error ? e.message : String(e)}`);
     } finally {
       setAiLoading(false);
     }

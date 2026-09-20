@@ -2,7 +2,7 @@
 
 export async function classifySpendGemini(merchantDesc: string) {
   const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error("GEMINI_API_KEY is not set");
+  if (!apiKey) throw new Error("GEMINI_API_KEY is not set in Vercel environment variables.");
 
   const prompt = `You are a rewards classification assistant for the HDFC MoneyBack+ credit card.
 The user is spending money at: "${merchantDesc}"
@@ -20,18 +20,26 @@ Respond ONLY in raw JSON format without markdown blocks:
   "reason": "Short explanation of why it falls into this category"
 }`;
 
-  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { response_mime_type: "application/json" }
-    })
-  });
+  try {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { response_mime_type: "application/json" }
+      })
+    });
 
-  if (!response.ok) throw new Error("Failed to call Gemini API");
-  
-  const data = await response.json();
-  const text = data.candidates[0].content.parts[0].text;
-  return JSON.parse(text) as { type: '10x' | 'grocery' | 'excluded' | 'normal', merchant: string, reason: string };
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`Gemini API Error: ${response.status} - ${errText}`);
+    }
+    
+    const data = await response.json();
+    const text = data.candidates[0].content.parts[0].text;
+    return JSON.parse(text) as { type: '10x' | 'grocery' | 'excluded' | 'normal', merchant: string, reason: string };
+  } catch (error: any) {
+    console.error("AI Classification Error:", error);
+    throw new Error(error.message || "Failed to call Gemini API");
+  }
 }
