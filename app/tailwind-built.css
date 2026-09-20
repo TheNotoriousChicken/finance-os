@@ -3,12 +3,13 @@
 @layer theme, base, components, utilities;
 @layer theme {
   :root, :host {
-    --font-sans: "Nexa", system-ui, sans-serif;
+    --font-sans: var(--font-sans), system-ui, sans-serif;
     --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
       "Courier New", monospace;
     --color-red-400: oklch(70.4% 0.191 22.216);
     --color-red-500: oklch(63.7% 0.237 25.331);
+    --color-slate-200: oklch(92.9% 0.013 255.508);
     --color-zinc-50: oklch(98.5% 0 none);
     --color-zinc-400: oklch(70.5% 0.015 286.067);
     --color-zinc-600: oklch(44.2% 0.017 285.786);
@@ -1212,8 +1213,8 @@
   .text-\[\#D8B4FE\] {
     color: #D8B4FE;
   }
-  .text-\[\#FAFAFA\] {
-    color: #FAFAFA;
+  .text-\[\#E4E4E7\] {
+    color: #E4E4E7;
   }
   .text-\[\#FF4757\] {
     color: #FF4757;
@@ -1239,29 +1240,32 @@
       color: color-mix(in oklab, var(--color-red-500) 80%, transparent);
     }
   }
+  .text-slate-200 {
+    color: var(--color-slate-200);
+  }
+  .text-slate-200\/40 {
+    color: color-mix(in srgb, oklch(92.9% 0.013 255.508) 40%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      color: color-mix(in oklab, var(--color-slate-200) 40%, transparent);
+    }
+  }
+  .text-slate-200\/50 {
+    color: color-mix(in srgb, oklch(92.9% 0.013 255.508) 50%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      color: color-mix(in oklab, var(--color-slate-200) 50%, transparent);
+    }
+  }
+  .text-slate-200\/60 {
+    color: color-mix(in srgb, oklch(92.9% 0.013 255.508) 60%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      color: color-mix(in oklab, var(--color-slate-200) 60%, transparent);
+    }
+  }
   .text-transparent {
     color: transparent;
   }
   .text-white {
     color: var(--color-white);
-  }
-  .text-white\/40 {
-    color: color-mix(in srgb, #fff 40%, transparent);
-    @supports (color: color-mix(in lab, red, red)) {
-      color: color-mix(in oklab, var(--color-white) 40%, transparent);
-    }
-  }
-  .text-white\/50 {
-    color: color-mix(in srgb, #fff 50%, transparent);
-    @supports (color: color-mix(in lab, red, red)) {
-      color: color-mix(in oklab, var(--color-white) 50%, transparent);
-    }
-  }
-  .text-white\/60 {
-    color: color-mix(in srgb, #fff 60%, transparent);
-    @supports (color: color-mix(in lab, red, red)) {
-      color: color-mix(in oklab, var(--color-white) 60%, transparent);
-    }
   }
   .uppercase {
     text-transform: uppercase;
@@ -1403,8 +1407,8 @@
     --tw-outline-style: none;
     outline-style: none;
   }
-  .group-focus-within\:text-white:is(:where(.group):focus-within *) {
-    color: var(--color-white);
+  .group-focus-within\:text-slate-200:is(:where(.group):focus-within *) {
+    color: var(--color-slate-200);
   }
   @media (hover: hover) {
     .group-hover\:translate-x-1:is(:where(.group):hover *) {
@@ -1528,8 +1532,8 @@
     .hover\:text-red-500:hover {
       color: var(--color-red-500);
     }
-    .hover\:text-white:hover {
-      color: var(--color-white);
+    .hover\:text-slate-200:hover {
+      color: var(--color-slate-200);
     }
     .hover\:shadow-\[0_0_40px_rgba\(255\,255\,255\,0\.2\)\]:hover {
       --tw-shadow: 0 0 40px var(--tw-shadow-color, rgba(255,255,255,0.2));
@@ -1658,20 +1662,6 @@
       display: none;
     }
   }
-}
-@font-face {
-  font-family: "Nexa";
-  src: url("/fonts/Nexa-Bold.woff2") format("woff2"), url("/fonts/Nexa-Bold.otf") format("opentype"), url("/fonts/Nexa-Bold.ttf") format("truetype");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Nexa";
-  src: url("/fonts/Nexa-Regular.woff2") format("woff2"), url("/fonts/Nexa-Regular.otf") format("opentype"), url("/fonts/Nexa-Regular.ttf") format("truetype");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
 }
 :root {
   --color-bg: #050505;

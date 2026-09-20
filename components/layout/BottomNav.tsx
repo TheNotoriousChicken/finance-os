@@ -30,11 +30,11 @@ export function BottomNav() {
               href={href}
               className={cn(
                 'flex flex-col items-center gap-1 px-3 py-1 rounded-xl transition-all duration-150',
-                active ? 'text-white' : 'text-[#71717A] hover:text-[#A1A1AA]'
+                active ? 'text-slate-200' : 'text-[#71717A] hover:text-[#A1A1AA]'
               )}
             >
               <Icon size={22} strokeWidth={active ? 2.5 : 2} />
-              <span className="text-[10px] font-medium">{label}</span>
+              <span className="text-[10px] font-normal">{label}</span>
             </Link>
           );
         })}

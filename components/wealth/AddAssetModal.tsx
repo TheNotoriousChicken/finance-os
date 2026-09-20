@@ -39,19 +39,19 @@ export function AddAssetModal({ isOpen, onClose }: { isOpen: boolean; onClose: (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="bg-[#121214] border border-[#27272A] rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
         <div className="flex items-center justify-between p-5 border-b border-[#27272A]">
-          <h2 className="text-lg font-semibold text-white">Add Investment</h2>
-          <button onClick={onClose} className="text-[#A1A1AA] hover:text-white transition-colors">
+          <h2 className="text-lg font-bold text-slate-200">Add Investment</h2>
+          <button onClick={onClose} className="text-[#A1A1AA] hover:text-slate-200 transition-colors">
             <X size={20} />
           </button>
         </div>
         
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
           <div>
-            <label className="block text-xs font-medium text-[#A1A1AA] mb-1.5 uppercase tracking-wider">Asset Type</label>
+            <label className="leading-relaxed block text-xs font-normal text-[#A1A1AA] mb-1.5 uppercase tracking-wider">Asset Type</label>
             <select
               value={form.type}
               onChange={e => setForm({...form, type: e.target.value})}
-              className="w-full bg-[#0A0A0B] border border-[#27272A] rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-[#3F3F46] [color-scheme:dark]"
+              className="leading-relaxed w-full bg-[#0A0A0B] border border-[#27272A] rounded-lg p-2.5 text-sm text-slate-200 focus:outline-none focus:border-[#3F3F46] [color-scheme:dark]"
             >
               <option value="STOCK">Stock</option>
               <option value="MUTUAL_FUND">Mutual Fund</option>
@@ -61,32 +61,32 @@ export function AddAssetModal({ isOpen, onClose }: { isOpen: boolean; onClose: (
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-[#A1A1AA] mb-1.5 uppercase tracking-wider">Asset Name</label>
+            <label className="leading-relaxed block text-xs font-normal text-[#A1A1AA] mb-1.5 uppercase tracking-wider">Asset Name</label>
             <input
               required
               type="text"
               value={form.name}
               onChange={e => setForm({...form, name: e.target.value})}
               placeholder="e.g. HDFC Bank, Axis Bluechip"
-              className="w-full bg-[#0A0A0B] border border-[#27272A] rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-[#3F3F46] [color-scheme:dark]"
+              className="leading-relaxed w-full bg-[#0A0A0B] border border-[#27272A] rounded-lg p-2.5 text-sm text-slate-200 focus:outline-none focus:border-[#3F3F46] [color-scheme:dark]"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-[#A1A1AA] mb-1.5 uppercase tracking-wider">Ticker Symbol (Optional)</label>
+            <label className="leading-relaxed block text-xs font-normal text-[#A1A1AA] mb-1.5 uppercase tracking-wider">Ticker Symbol (Optional)</label>
             <input
               type="text"
               value={form.ticker}
               onChange={e => setForm({...form, ticker: e.target.value})}
               placeholder="e.g. HDFCBANK.NS or BTC-USD"
-              className="w-full bg-[#0A0A0B] border border-[#27272A] rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-[#3F3F46] [color-scheme:dark]"
+              className="leading-relaxed w-full bg-[#0A0A0B] border border-[#27272A] rounded-lg p-2.5 text-sm text-slate-200 focus:outline-none focus:border-[#3F3F46] [color-scheme:dark]"
             />
-            <p className="text-[11px] text-[#52525B] mt-1.5">For live prices, use Yahoo Finance tickers (.NS for NSE, .BO for BSE).</p>
+            <p className="leading-relaxed text-[11px] text-[#52525B] mt-1.5">For live prices, use Yahoo Finance tickers (.NS for NSE, .BO for BSE).</p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-[#A1A1AA] mb-1.5 uppercase tracking-wider">Quantity</label>
+              <label className="leading-relaxed block text-xs font-normal text-[#A1A1AA] mb-1.5 uppercase tracking-wider">Quantity</label>
               <input
                 required
                 type="number"
@@ -94,11 +94,11 @@ export function AddAssetModal({ isOpen, onClose }: { isOpen: boolean; onClose: (
                 value={form.quantity}
                 onChange={e => setForm({...form, quantity: e.target.value})}
                 placeholder="e.g. 10.5"
-                className="w-full bg-[#0A0A0B] border border-[#27272A] rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-[#3F3F46] [color-scheme:dark]"
+                className="leading-relaxed w-full bg-[#0A0A0B] border border-[#27272A] rounded-lg p-2.5 text-sm text-slate-200 focus:outline-none focus:border-[#3F3F46] [color-scheme:dark]"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-[#A1A1AA] mb-1.5 uppercase tracking-wider">Avg Buy Price (₹)</label>
+              <label className="leading-relaxed block text-xs font-normal text-[#A1A1AA] mb-1.5 uppercase tracking-wider">Avg Buy Price (₹)</label>
               <input
                 required
                 type="number"
@@ -106,7 +106,7 @@ export function AddAssetModal({ isOpen, onClose }: { isOpen: boolean; onClose: (
                 value={form.averageBuyPrice}
                 onChange={e => setForm({...form, averageBuyPrice: e.target.value})}
                 placeholder="e.g. 1500.50"
-                className="w-full bg-[#0A0A0B] border border-[#27272A] rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-[#3F3F46] [color-scheme:dark]"
+                className="leading-relaxed w-full bg-[#0A0A0B] border border-[#27272A] rounded-lg p-2.5 text-sm text-slate-200 focus:outline-none focus:border-[#3F3F46] [color-scheme:dark]"
               />
             </div>
           </div>

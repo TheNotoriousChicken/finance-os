@@ -19,26 +19,26 @@ export default async function EmiPage() {
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }} className=" max-w-3xl mx-auto pb-10 page-enter">
       <div>
         <h1 className="text-3xl font-bold tracking-tight text-white">EMIs</h1>
-        <p className="text-sm text-[#52525B] mt-1">Active installment plans</p>
+        <p className="leading-relaxed text-sm text-[#52525B] mt-1">Active installment plans</p>
       </div>
 
       {/* Summary strip */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "16px" }}>
         <div className="minimal-card rounded-2xl p-5">
-          <p className="text-[11px] font-semibold text-[#52525B] uppercase tracking-widest mb-1">Monthly Obligation</p>
-          <p className="text-3xl font-bold text-[#FF4757] tracking-tight">{formatPaise(totalMonthlyEmi)}</p>
+          <p className="leading-relaxed text-[11px] font-bold text-[#52525B] uppercase tracking-widest mb-1">Monthly Obligation</p>
+          <p className="tabular-nums text-3xl font-bold text-[#FF4757] tracking-tight">{formatPaise(totalMonthlyEmi)}</p>
         </div>
         <div className="minimal-card rounded-2xl p-5">
-          <p className="text-[11px] font-semibold text-[#52525B] uppercase tracking-widest mb-1">Total Remaining</p>
-          <p className="text-3xl font-bold text-white tracking-tight">{formatPaise(totalDebt)}</p>
+          <p className="leading-relaxed text-[11px] font-bold text-[#52525B] uppercase tracking-widest mb-1">Total Remaining</p>
+          <p className="tabular-nums text-3xl font-bold text-white tracking-tight">{formatPaise(totalDebt)}</p>
         </div>
       </div>
 
       {/* Plans */}
       <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-        <p className="text-[11px] font-semibold text-[#52525B] uppercase tracking-widest px-1">Active Plans</p>
+        <p className="leading-relaxed text-[11px] font-bold text-[#52525B] uppercase tracking-widest px-1">Active Plans</p>
         {plans.length === 0 ? (
-          <div className="minimal-card rounded-2xl py-12 text-center text-sm text-[#52525B]">No active EMI plans</div>
+          <div className="leading-relaxed minimal-card rounded-2xl py-12 text-center text-sm text-[#52525B]">No active EMI plans</div>
         ) : (
           plans.map(p => (
             <div key={p.id} className="minimal-card rounded-2xl p-5 flex items-center justify-between">
@@ -47,13 +47,13 @@ export default async function EmiPage() {
                   <TrendingUp size={18} className="text-[#FF4757]" />
                 </div>
                 <div>
-                  <p className="text-[14px] font-semibold text-white">{p.description}</p>
-                  <p className="text-[12px] text-[#52525B] mt-0.5">{p.tenureMonths} months · {p.interestRatePct}% p.a.</p>
+                  <p className="text-[14px] font-bold text-slate-200">{p.description}</p>
+                  <p className="leading-relaxed text-[12px] text-[#52525B] mt-0.5">{p.tenureMonths} months · {p.interestRatePct}% p.a.</p>
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-[16px] font-bold text-[#FF4757]">{formatPaise(p.emiAmountPaise)}<span className="text-[11px] font-normal text-[#52525B]">/mo</span></p>
-                <p className="text-[12px] text-[#52525B] mt-0.5">{formatPaise(p.financedAmountPaise)} financed</p>
+                <p className="leading-relaxed tabular-nums text-[16px] font-bold text-[#FF4757]">{formatPaise(p.emiAmountPaise)}<span className="leading-relaxed tabular-nums text-[11px] font-normal text-[#52525B]">/mo</span></p>
+                <p className="leading-relaxed tabular-nums text-[12px] text-[#52525B] mt-0.5">{formatPaise(p.financedAmountPaise)} financed</p>
               </div>
             </div>
           ))
@@ -62,24 +62,24 @@ export default async function EmiPage() {
 
       {/* Add new */}
       <div className="minimal-card rounded-2xl p-6">
-        <p className="text-[11px] font-semibold text-[#52525B] uppercase tracking-widest mb-4">Add EMI Plan</p>
+        <p className="leading-relaxed text-[11px] font-bold text-[#52525B] uppercase tracking-widest mb-4">Add EMI Plan</p>
         <form action={addEmiAction} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
           <input name="description" placeholder="Item (e.g. iPhone 16)" required
-            className="w-full h-11 px-4 rounded-xl text-sm text-white outline-none focus:ring-1 focus:ring-white/20"
+            className="leading-relaxed w-full h-11 px-4 rounded-xl text-sm text-slate-200 outline-none focus:ring-1 focus:ring-white/20"
             style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)' }}
           />
           <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "12px" }}>
             <input name="originalAmount" type="number" placeholder="Total cost (Rs.)" required
-              className="w-full h-11 px-4 rounded-xl text-sm text-white outline-none focus:ring-1 focus:ring-white/20"
+              className="leading-relaxed w-full h-11 px-4 rounded-xl text-sm text-slate-200 outline-none focus:ring-1 focus:ring-white/20"
               style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)' }}
             />
             <input name="months" type="number" placeholder="Months" required
-              className="w-full h-11 px-4 rounded-xl text-sm text-white outline-none focus:ring-1 focus:ring-white/20"
+              className="leading-relaxed w-full h-11 px-4 rounded-xl text-sm text-slate-200 outline-none focus:ring-1 focus:ring-white/20"
               style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)' }}
             />
           </div>
           <button type="submit"
-            className="w-full h-11 rounded-xl text-sm font-semibold text-black bg-white hover:bg-[#E4E4E7] transition-colors active:scale-95"
+            className="leading-relaxed w-full h-11 rounded-xl text-sm font-bold text-black bg-white hover:bg-[#E4E4E7] transition-colors active:scale-95"
           >
             Add Plan
           </button>

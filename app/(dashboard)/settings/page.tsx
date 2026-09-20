@@ -45,7 +45,7 @@ export default async function SettingsPage() {
         <h1 className="text-3xl font-bold bg-gradient-to-br from-white via-white to-[#71717A] bg-clip-text text-transparent tracking-tight">
           Settings
         </h1>
-        <p className="text-sm text-[#6B6B6B] mt-1">App preferences and configuration</p>
+        <p className="leading-relaxed text-sm text-[#6B6B6B] mt-1">App preferences and configuration</p>
       </div>
 
       {/* Profile Card */}
@@ -58,28 +58,28 @@ export default async function SettingsPage() {
         <CardContent className="p-5 pt-0">
           <form action={updateProfileAction} style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              <label className="text-xs font-medium text-[#A1A1AA] uppercase tracking-wider">Display Name</label>
+              <label className="leading-relaxed text-xs font-normal text-[#A1A1AA] uppercase tracking-wider">Display Name</label>
               <input
                 name="displayName"
                 defaultValue={profile?.displayName ?? "Me"}
-                className="w-full h-11 px-4 bg-[#0A0A0A] border border-[#27272A] rounded-xl text-white text-sm focus:outline-none focus:ring-1 focus:ring-white/20"
+                className="leading-relaxed w-full h-11 px-4 bg-[#0A0A0A] border border-[#27272A] rounded-xl text-slate-200 text-sm focus:outline-none focus:ring-1 focus:ring-white/20"
                 placeholder="Your name"
               />
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              <label className="text-xs font-medium text-[#A1A1AA] uppercase tracking-wider">Monthly Salary (Rs.)</label>
+              <label className="leading-relaxed text-xs font-normal text-[#A1A1AA] uppercase tracking-wider">Monthly Salary (Rs.)</label>
               <input
                 name="salary"
                 type="number"
                 step="0.01"
                 defaultValue={profile ? (profile.monthlySalaryPaise / 100).toFixed(2) : ""}
-                className="w-full h-11 px-4 bg-[#0A0A0A] border border-[#27272A] rounded-xl text-white text-sm focus:outline-none focus:ring-1 focus:ring-white/20"
+                className="leading-relaxed w-full h-11 px-4 bg-[#0A0A0A] border border-[#27272A] rounded-xl text-slate-200 text-sm focus:outline-none focus:ring-1 focus:ring-white/20"
                 placeholder="e.g. 75000"
               />
             </div>
             <button
               type="submit"
-              className="w-full h-11 bg-white text-black text-sm font-semibold rounded-xl hover:bg-[#E4E4E7] transition-colors active:scale-[0.98]"
+              className="leading-relaxed w-full h-11 bg-white text-black text-sm font-bold rounded-xl hover:bg-[#E4E4E7] transition-colors active:scale-[0.98]"
             >
               Save Profile
             </button>
@@ -98,34 +98,34 @@ export default async function SettingsPage() {
           <form action={updateSettingAction} className="flex items-end gap-3">
             <input type="hidden" name="key" value="ai.confidence.high" />
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }} className="flex-1 ">
-              <label className="text-xs font-medium text-[#A1A1AA] uppercase tracking-wider">Auto-fill threshold (%)</label>
+              <label className="leading-relaxed text-xs font-normal text-[#A1A1AA] uppercase tracking-wider">Auto-fill threshold (%)</label>
               <input
                 name="value"
                 type="number"
                 min="0"
                 max="100"
                 defaultValue={settingMap["ai.confidence.high"] ?? "90"}
-                className="w-full h-11 px-4 bg-[#0A0A0A] border border-[#27272A] rounded-xl text-white text-sm focus:outline-none focus:ring-1 focus:ring-white/20"
+                className="leading-relaxed w-full h-11 px-4 bg-[#0A0A0A] border border-[#27272A] rounded-xl text-slate-200 text-sm focus:outline-none focus:ring-1 focus:ring-white/20"
               />
             </div>
-            <button type="submit" className="h-11 px-5 bg-[#27272A] text-white text-sm font-medium rounded-xl hover:bg-[#3F3F46] transition-colors flex-shrink-0">
+            <button type="submit" className="leading-relaxed h-11 px-5 bg-[#27272A] text-slate-200 text-sm font-normal rounded-xl hover:bg-[#3F3F46] transition-colors flex-shrink-0">
               Save
             </button>
           </form>
           <form action={updateSettingAction} className="flex items-end gap-3">
             <input type="hidden" name="key" value="ai.confidence.mid" />
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }} className="flex-1 ">
-              <label className="text-xs font-medium text-[#A1A1AA] uppercase tracking-wider">Suggestion threshold (%)</label>
+              <label className="leading-relaxed text-xs font-normal text-[#A1A1AA] uppercase tracking-wider">Suggestion threshold (%)</label>
               <input
                 name="value"
                 type="number"
                 min="0"
                 max="100"
                 defaultValue={settingMap["ai.confidence.mid"] ?? "70"}
-                className="w-full h-11 px-4 bg-[#0A0A0A] border border-[#27272A] rounded-xl text-white text-sm focus:outline-none focus:ring-1 focus:ring-white/20"
+                className="leading-relaxed w-full h-11 px-4 bg-[#0A0A0A] border border-[#27272A] rounded-xl text-slate-200 text-sm focus:outline-none focus:ring-1 focus:ring-white/20"
               />
             </div>
-            <button type="submit" className="h-11 px-5 bg-[#27272A] text-white text-sm font-medium rounded-xl hover:bg-[#3F3F46] transition-colors flex-shrink-0">
+            <button type="submit" className="leading-relaxed h-11 px-5 bg-[#27272A] text-slate-200 text-sm font-normal rounded-xl hover:bg-[#3F3F46] transition-colors flex-shrink-0">
               Save
             </button>
           </form>

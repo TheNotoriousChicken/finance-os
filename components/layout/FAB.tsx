@@ -18,7 +18,7 @@ export function FAB({ onClick }: FABProps) {
       onMouseLeave={() => setIsPressed(false)}
       className={cn(
         'fixed right-4 sm:right-8 z-50 rounded-full w-14 h-14 flex items-center justify-center',
-        'font-medium text-black shadow-lg bg-white',
+        'font-normal text-black shadow-lg bg-white',
         'transition-all duration-150',
         isPressed ? 'scale-90' : 'hover:scale-105 hover:bg-[#F4F4F5] hover:shadow-xl',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2'

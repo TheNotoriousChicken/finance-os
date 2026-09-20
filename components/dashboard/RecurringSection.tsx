@@ -5,7 +5,7 @@ export function RecurringSection({ subscriptions }: { subscriptions: any[] }) {
   if (!subscriptions.length) return null;
   return (
     <div className="minimal-card rounded-2xl p-5">
-      <p className="text-[11px] font-semibold text-[#52525B] uppercase tracking-widest mb-4">Recurring & Subscriptions</p>
+      <p className="leading-relaxed text-[11px] font-bold text-[#52525B] uppercase tracking-widest mb-4">Recurring & Subscriptions</p>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         {subscriptions.map(sub => {
           const nextDate = sub.nextExpectedDate ? new Date(sub.nextExpectedDate) : null;
@@ -17,14 +17,14 @@ export function RecurringSection({ subscriptions }: { subscriptions: any[] }) {
                   <RefreshCw size={14} style={{ color: '#00D68F' }} />
                 </div>
                 <div>
-                  <p className="text-[13px] font-medium text-white">{sub.merchantName}</p>
-                  <p className="text-[11px] text-[#52525B]">{sub.occurrenceCount}x detected</p>
+                  <p className="leading-relaxed text-[13px] font-normal text-slate-200">{sub.merchantName}</p>
+                  <p className="leading-relaxed text-[11px] text-[#52525B]">{sub.occurrenceCount}x detected</p>
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-[13px] font-semibold text-white">{formatPaise(sub.avgAmountPaise)}</p>
+                <p className="leading-relaxed tabular-nums text-[13px] font-bold text-slate-200">{formatPaise(sub.avgAmountPaise)}</p>
                 {daysUntil !== null && (
-                  <p className="text-[11px]" style={{ color: daysUntil <= 3 ? '#FF4757' : '#52525B' }}>
+                  <p className="leading-relaxed text-[11px]" style={{ color: daysUntil <= 3 ? '#FF4757' : '#52525B' }}>
                     {daysUntil <= 0 ? 'Due now' : `in ${daysUntil}d`}
                   </p>
                 )}

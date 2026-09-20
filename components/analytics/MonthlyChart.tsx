@@ -8,15 +8,15 @@ interface MonthlyChartProps {
 
 export function MonthlyChart({ data }: MonthlyChartProps) {
   if (!data || data.length === 0) {
-    return <div className="h-44 flex items-center justify-center text-[#52525B] text-sm">No expense data yet</div>;
+    return <div className="leading-relaxed h-44 flex items-center justify-center text-[#52525B] text-sm">No expense data yet</div>;
   }
 
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-[#121214] border border-[#27272A] p-3 rounded-lg shadow-xl">
-          <p className="text-[11px] text-[#A1A1AA] uppercase tracking-wider mb-1">{payload[0].payload.month}</p>
-          <p className="text-sm font-bold text-white">{payload[0].payload.amountFormatted}</p>
+          <p className="leading-relaxed text-[11px] text-[#A1A1AA] uppercase tracking-wider mb-1">{payload[0].payload.month}</p>
+          <p className="leading-relaxed text-sm font-bold text-slate-200">{payload[0].payload.amountFormatted}</p>
         </div>
       );
     }

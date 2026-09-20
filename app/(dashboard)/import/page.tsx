@@ -49,8 +49,8 @@ export default function BulkImportPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-white tracking-tight">Bulk Import</h1>
-        <p className="text-sm text-[#A1A1AA] mt-1">Upload your bank statement (PDF/CSV/Excel) or paste text directly</p>
+        <h1 className="text-2xl font-bold text-white tracking-tight">Bulk Import</h1>
+        <p className="leading-relaxed text-sm text-[#A1A1AA] mt-1">Upload your bank statement (PDF/CSV/Excel) or paste text directly</p>
       </div>
 
       <Card className="border-white/10 bg-[#0A0A0A]">
@@ -59,13 +59,13 @@ export default function BulkImportPage() {
           <div className="flex bg-[#121214] p-1 rounded-xl w-max border border-white/10 mb-4">
             <button 
               onClick={() => setMode('AI')} 
-              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${mode === 'AI' ? 'bg-[#27272A] text-white shadow-sm' : 'text-[#A1A1AA] hover:text-white'}`}
+              className={`px-4 py-1.5 rounded-lg text-sm font-normal transition-colors ${mode === 'AI' ? 'bg-[#27272A] text-slate-200 shadow-sm' : 'text-[#A1A1AA] hover:text-slate-200'}`}
             >
               Smart AI Import
             </button>
             <button 
               onClick={() => setMode('MANUAL')} 
-              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${mode === 'MANUAL' ? 'bg-[#27272A] text-white shadow-sm' : 'text-[#A1A1AA] hover:text-white'}`}
+              className={`px-4 py-1.5 rounded-lg text-sm font-normal transition-colors ${mode === 'MANUAL' ? 'bg-[#27272A] text-slate-200 shadow-sm' : 'text-[#A1A1AA] hover:text-slate-200'}`}
             >
               Manual Excel/CSV
             </button>
@@ -88,13 +88,13 @@ export default function BulkImportPage() {
             </div>
             {file ? (
               <div>
-                <p className="text-sm font-medium text-white">{file.name}</p>
-                <p className="text-xs text-[#A1A1AA] mt-1">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                <p className="leading-relaxed text-sm font-normal text-slate-200">{file.name}</p>
+                <p className="leading-relaxed text-xs text-[#A1A1AA] mt-1">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
               </div>
             ) : (
               <div>
-                <p className="text-sm font-medium text-white">Click to upload a document</p>
-                <p className="text-xs text-[#A1A1AA] mt-1">PDF, CSV, or Excel format</p>
+                <p className="leading-relaxed text-sm font-normal text-slate-200">Click to upload a document</p>
+                <p className="leading-relaxed text-xs text-[#A1A1AA] mt-1">PDF, CSV, or Excel format</p>
               </div>
             )}
           </div>
@@ -102,7 +102,7 @@ export default function BulkImportPage() {
           {mode === 'AI' && (
           <div className="flex items-center gap-4">
             <div className="flex-1 h-px bg-white/10"></div>
-            <span className="text-xs text-[#A1A1AA] font-medium uppercase tracking-wider">OR PASTE TEXT</span>
+            <span className="leading-relaxed text-xs text-[#A1A1AA] font-normal uppercase tracking-wider">OR PASTE TEXT</span>
             <div className="flex-1 h-px bg-white/10"></div>
           </div>
           )}
@@ -112,12 +112,12 @@ export default function BulkImportPage() {
               value={text}
               onChange={(e) => setText(e.target.value)}
               placeholder="Date, Narration, Ref No., Value Date, Withdrawal Amt., Deposit Amt., Closing Balance..."
-              className="w-full h-32 bg-[#121214] border border-white/10 rounded-xl p-4 text-sm focus:outline-none focus:ring-1 focus:ring-white/20 text-white placeholder-[#71717A] resize-none"
+              className="leading-relaxed w-full h-32 bg-[#121214] border border-white/10 rounded-xl p-4 text-sm focus:outline-none focus:ring-1 focus:ring-white/20 text-slate-200 placeholder-[#71717A] resize-none"
               disabled={!!file}
             />
           )}
           
-          {error && <div className="text-red-400 text-sm font-medium bg-red-400/10 p-3 rounded-lg">{error}</div>}
+          {error && <div className="leading-relaxed text-red-400 text-sm font-normal bg-red-400/10 p-3 rounded-lg">{error}</div>}
 
           <Button 
             onClick={handleImport} 
@@ -136,14 +136,14 @@ export default function BulkImportPage() {
             {saved ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <CheckCircle2 size={40} className="text-[#00D68F] mb-4" />
-                <h3 className="text-white font-semibold text-lg mb-2">Import Saved!</h3>
-                <p className="text-[#A1A1AA] text-sm">
+                <h3 className="text-slate-200 font-bold text-lg mb-2">Import Saved!</h3>
+                <p className="leading-relaxed text-[#A1A1AA] text-sm">
                   {results?.length} transactions have been reviewed and saved.
                 </p>
               </div>
             ) : (
               <>
-            <h3 className="font-semibold mb-4 text-white flex items-center gap-2">
+            <h3 className="font-bold mb-4 text-slate-200 flex items-center gap-2">
               <CheckCircle2 size={18} className="text-[#00D68F]" /> 
               Extracted {results.length} transactions
             </h3>
@@ -151,15 +151,15 @@ export default function BulkImportPage() {
               {results.map((tx, i) => (
                 <div key={i} className="flex justify-between items-center p-3 rounded-xl bg-[#121214] border border-white/5">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-xs">
+                    <div className="leading-relaxed w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-xs">
                       {tx.type === 'INCOME' ? '↓' : '↑'}
                     </div>
                     <div>
-                      <div className="text-sm font-medium text-white">{tx.merchantNormalized}</div>
-                      <div className="text-xs text-[#A1A1AA]">{tx.date}</div>
+                      <div className="leading-relaxed text-sm font-normal text-slate-200">{tx.merchantNormalized}</div>
+                      <div className="leading-relaxed text-xs text-[#A1A1AA]">{tx.date}</div>
                     </div>
                   </div>
-                  <div className={`text-sm font-bold ${tx.type === 'INCOME' ? 'text-[#00D68F]' : 'text-white'}`}>
+                  <div className={`text-sm font-bold ${tx.type === 'INCOME' ? 'text-[#00D68F]' : 'text-slate-200'}`}>
                     {tx.type === 'INCOME' ? '+' : '-'}{formatPaise(tx.amountPaise)}
                   </div>
                 </div>

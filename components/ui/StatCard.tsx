@@ -58,10 +58,10 @@ export function StatCard({
         className
       )}
     >
-      <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none text-white">{icon}</div>
+      <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none text-slate-200">{icon}</div>
       <div className="flex items-start justify-between mb-4 relative z-10">
         <div className="flex items-center gap-2">
-          <p className="text-[11px] font-semibold text-[#A1A1AA] uppercase tracking-wider">{label}</p>
+          <p className="leading-relaxed text-[11px] font-bold text-[#A1A1AA] uppercase tracking-wider">{label}</p>
         </div>
         {badge}
       </div>
@@ -69,7 +69,7 @@ export function StatCard({
       <div>
         <div
           className={cn(
-            'font-semibold tracking-tight relative z-10',
+            'font-bold tracking-tight relative z-10',
             valueSize[size],
             !accent && 'bg-gradient-to-br from-white via-[#E4E4E7] to-[#71717A] bg-clip-text text-transparent drop-shadow-sm',
             visible && 'animate-count-up'
@@ -80,7 +80,7 @@ export function StatCard({
         </div>
 
         {sublabel && (
-          <p className="mt-2 text-xs text-[#888] font-medium relative z-10">{sublabel}</p>
+          <p className="leading-relaxed mt-2 text-xs text-[#888] font-normal relative z-10">{sublabel}</p>
         )}
 
         {trend && (

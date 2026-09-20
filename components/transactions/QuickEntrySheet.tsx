@@ -13,9 +13,9 @@ interface QuickEntryProps {
   paymentMethods: any[];
 }
 
-const selectClass = "w-full h-11 px-4 rounded-xl text-sm text-white outline-none transition-colors appearance-none cursor-pointer [color-scheme:dark]";
+const selectClass = "w-full h-11 px-4 rounded-xl text-sm text-slate-200 outline-none transition-colors appearance-none cursor-pointer [color-scheme:dark]";
 const selectStyle = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)' };
-const labelClass = "block text-[11px] font-semibold text-[#52525B] uppercase tracking-widest";
+const labelClass = "block text-[11px] font-bold text-[#52525B] uppercase tracking-widest";
 
 
 function CustomSelect({ options, value, onChange, placeholder, name, required }: any) {
@@ -39,7 +39,7 @@ function CustomSelect({ options, value, onChange, placeholder, name, required }:
         style={selectStyle}
         onClick={() => setIsOpen(!isOpen)}
       >
-         <span className={selectedOpt ? "text-white" : "text-[#71717A]"}>
+         <span className={selectedOpt ? "text-slate-200" : "text-[#71717A]"}>
            {selectedOpt ? selectedOpt.label : placeholder}
          </span>
          <ChevronDown size={14} className="text-[#52525B]" style={{ transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
@@ -49,7 +49,7 @@ function CustomSelect({ options, value, onChange, placeholder, name, required }:
             {options.map((opt: any) => (
                <div 
                  key={opt.value}
-                 className="px-4 py-3 text-[13px] text-white hover:bg-white/10 cursor-pointer transition-colors"
+                 className="leading-relaxed px-4 py-3 text-[13px] text-slate-200 hover:bg-white/10 cursor-pointer transition-colors"
                  onClick={() => { onChange(opt.value); setIsOpen(false); }}
                >
                  {opt.label}
@@ -166,10 +166,10 @@ export function QuickEntrySheet({ isOpen, onClose, categories, paymentMethods }:
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 pt-5 pb-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-          <h2 className="text-[15px] font-bold text-white tracking-tight">Add Transaction</h2>
+          <h2 className="text-[15px] font-bold text-slate-200 tracking-tight">Add Transaction</h2>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-[#52525B] hover:text-white transition-colors"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-[#52525B] hover:text-slate-200 transition-colors"
             style={{ background: 'rgba(255,255,255,0.06)' }}
           >
             <X size={16} />
@@ -182,7 +182,7 @@ export function QuickEntrySheet({ isOpen, onClose, categories, paymentMethods }:
             <button
               key={m}
               onClick={() => setMode(m)}
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[13px] font-semibold transition-all"
+              className="leading-relaxed flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[13px] font-bold transition-all"
               style={mode === m
                 ? { background: 'rgba(255,255,255,0.1)', color: '#FAFAFA', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.1)' }
                 : { color: '#52525B' }
@@ -201,7 +201,7 @@ export function QuickEntrySheet({ isOpen, onClose, categories, paymentMethods }:
                 Paste a bank SMS, UPI notification, or receipt. AI will extract amount, merchant, and category.
               </p>
               {error && (
-                <div className="p-3 rounded-xl text-[13px]" style={{ background: 'rgba(255,71,87,0.08)', border: '1px solid rgba(255,71,87,0.2)', color: '#FF4757' }}>
+                <div className="leading-relaxed p-3 rounded-xl text-[13px]" style={{ background: 'rgba(255,71,87,0.08)', border: '1px solid rgba(255,71,87,0.2)', color: '#FF4757' }}>
                   {error}
                 </div>
               )}
@@ -209,7 +209,7 @@ export function QuickEntrySheet({ isOpen, onClose, categories, paymentMethods }:
                 value={pasteText}
                 onChange={e => setPasteText(e.target.value)}
                 placeholder="e.g. Spent Rs.450 on HDFC Credit Card at Starbucks..."
-                className="w-full h-40 p-4 rounded-xl text-[13px] text-white placeholder-[#52525B] outline-none resize-none"
+                className="leading-relaxed w-full h-40 p-4 rounded-xl text-[13px] text-slate-200 placeholder-[#52525B] outline-none resize-none"
                 style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
               />
               <button
@@ -229,7 +229,7 @@ export function QuickEntrySheet({ isOpen, onClose, categories, paymentMethods }:
                 <button 
                   type="button" 
                   onClick={handleQuickSalary}
-                  className="text-[11px] font-bold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1"
+                  className="leading-relaxed text-[11px] font-bold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1"
                   style={{ background: 'rgba(0, 214, 143, 0.15)', color: '#00D68F' }}
                 >
                   <Sparkles size={12} /> Auto-fill Salary
@@ -237,7 +237,7 @@ export function QuickEntrySheet({ isOpen, onClose, categories, paymentMethods }:
               </div>
 
               {error && (
-                <div className="p-3 rounded-xl text-[13px]" style={{ background: 'rgba(255,71,87,0.08)', border: '1px solid rgba(255,71,87,0.2)', color: '#FF4757' }}>
+                <div className="leading-relaxed p-3 rounded-xl text-[13px]" style={{ background: 'rgba(255,71,87,0.08)', border: '1px solid rgba(255,71,87,0.2)', color: '#FF4757' }}>
                   {error}
                 </div>
               )}
@@ -261,7 +261,7 @@ export function QuickEntrySheet({ isOpen, onClose, categories, paymentMethods }:
                   <button
                     type="button"
                     onClick={handleOptimize}
-                    className="absolute right-0 bottom-3 flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-lg"
+                    className="leading-relaxed absolute right-0 bottom-3 flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-lg"
                     style={{ background: 'rgba(0,214,143,0.12)', color: '#00D68F' }}
                   >
                     <Zap size={11} /> Best Card
@@ -271,8 +271,8 @@ export function QuickEntrySheet({ isOpen, onClose, categories, paymentMethods }:
 
               {optSuggestion && (
                 <div className="p-3 rounded-xl" style={{ background: 'rgba(0,214,143,0.07)', border: '1px solid rgba(0,214,143,0.2)' }}>
-                  <p className="text-[13px] font-semibold text-[#00D68F]">Use: {optSuggestion.suggestion}</p>
-                  <p className="text-[11.5px] text-[#00D68F]/70 mt-0.5">{optSuggestion.reason}</p>
+                  <p className="leading-relaxed text-[13px] font-bold text-[#00D68F]">Use: {optSuggestion.suggestion}</p>
+                  <p className="leading-relaxed text-[11.5px] text-[#00D68F]/70 mt-0.5">{optSuggestion.reason}</p>
                 </div>
               )}
 
@@ -284,7 +284,7 @@ export function QuickEntrySheet({ isOpen, onClose, categories, paymentMethods }:
                   name="date"
                   defaultValue={new Date().toISOString().split('T')[0]}
                   required
-                  className="w-full h-11 px-4 rounded-xl text-[13.5px] text-white outline-none [color-scheme:dark]"
+                  className="w-full h-11 px-4 rounded-xl text-[13.5px] text-slate-200 outline-none [color-scheme:dark]"
                   style={selectStyle}
                 />
               </div>
@@ -298,7 +298,7 @@ export function QuickEntrySheet({ isOpen, onClose, categories, paymentMethods }:
                   value={merchant}
                   onChange={e => setMerchant(e.target.value)}
                   placeholder="e.g. Swiggy, Amazon..."
-                  className="w-full h-11 px-4 rounded-xl text-[13.5px] text-white placeholder-[#3F3F46] outline-none"
+                  className="w-full h-11 px-4 rounded-xl text-[13.5px] text-slate-200 placeholder-[#3F3F46] outline-none"
                   style={selectStyle}
                 />
               </div>
@@ -355,7 +355,7 @@ export function QuickEntrySheet({ isOpen, onClose, categories, paymentMethods }:
                   value={notes}
                   onChange={e => setNotes(e.target.value)}
                   placeholder="Private notes..."
-                  className="w-full h-11 px-4 rounded-xl text-[13.5px] text-white placeholder-[#3F3F46] outline-none"
+                  className="w-full h-11 px-4 rounded-xl text-[13.5px] text-slate-200 placeholder-[#3F3F46] outline-none"
                   style={selectStyle}
                 />
               </div>

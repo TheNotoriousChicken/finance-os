@@ -26,8 +26,8 @@ export function BankBalanceRow({ account }: { account: any }) {
           <Landmark size={15} style={{ color: account.color ?? '#A1A1AA' }} />
         </div>
         <div>
-          <p className="text-[13.5px] font-medium text-white">{account.name}</p>
-          <p className="text-[11.5px] text-[#52525B]">{account.type.replaceAll('_', ' ')}</p>
+          <p className="text-[13.5px] font-normal text-slate-200">{account.name}</p>
+          <p className="leading-relaxed text-[11.5px] text-[#52525B]">{account.type.replaceAll('_', ' ')}</p>
         </div>
       </div>
 
@@ -38,7 +38,7 @@ export function BankBalanceRow({ account }: { account: any }) {
               ref={inputRef}
               type="number"
               defaultValue={((account.balancePaise || 0) / 100).toString()}
-              className="w-28 h-8 px-2 rounded-lg text-sm text-white text-right outline-none focus:ring-1 focus:ring-[#00D68F]/50"
+              className="leading-relaxed w-28 h-8 px-2 rounded-lg text-sm text-slate-200 text-right outline-none focus:ring-1 focus:ring-[#00D68F]/50"
               style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)' }}
               autoFocus
               onKeyDown={(e) => { if (e.key === 'Enter') handleSave(); if (e.key === 'Escape') setEditing(false); }}
@@ -53,7 +53,7 @@ export function BankBalanceRow({ account }: { account: any }) {
         ) : (
           <button
             onClick={() => setEditing(true)}
-            className="text-[15px] font-bold text-white hover:text-[#00D68F] transition-colors cursor-pointer"
+            className="text-[15px] font-bold text-slate-200 hover:text-[#00D68F] transition-colors cursor-pointer"
             title="Click to edit balance"
           >
             {formatPaise(account.balancePaise || 0)}

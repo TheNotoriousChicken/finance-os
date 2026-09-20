@@ -10,7 +10,7 @@ export function RefreshPricesClient() {
     <button 
       onClick={() => startTransition(async () => { await refreshPricesAction(); })}
       disabled={isPending}
-      className="flex items-center gap-2 bg-white/5 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-white/10 transition-colors disabled:opacity-50"
+      className="leading-relaxed flex items-center gap-2 bg-white/5 text-slate-200 px-4 py-2 rounded-xl text-sm font-bold hover:bg-white/10 transition-colors disabled:opacity-50"
     >
       <RefreshCw size={14} className={isPending ? 'animate-spin' : ''} />
       Refresh

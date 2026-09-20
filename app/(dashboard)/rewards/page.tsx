@@ -38,9 +38,9 @@ export default async function RewardsPage() {
             <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-white">Rewards</h1>
-          <p className="text-sm text-[#52525B] mt-1">{pm?.name ?? 'MoneyBack+'} - {cardMonth}</p>
+          <p className="leading-relaxed text-sm text-[#52525B] mt-1">{pm?.name ?? 'MoneyBack+'} - {cardMonth}</p>
         </div>
-        <Link href="/rewards/calculator" className="flex items-center gap-2 h-10 px-4 rounded-xl text-[13px] font-semibold text-[#FFD700] hover:bg-[#FFD700]/10 transition-colors" style={{ background: 'rgba(255,215,0,0.05)', border: '1px solid rgba(255,215,0,0.1)' }}>
+        <Link href="/rewards/calculator" className="leading-relaxed flex items-center gap-2 h-10 px-4 rounded-xl text-[13px] font-bold text-[#FFD700] hover:bg-[#FFD700]/10 transition-colors" style={{ background: 'rgba(255,215,0,0.05)', border: '1px solid rgba(255,215,0,0.1)' }}>
           <Calculator size={15} />
           Calculator
         </Link>
@@ -48,21 +48,21 @@ export default async function RewardsPage() {
 
       {/* Hero points card */}
       <div className="rounded-2xl p-6" style={{ background: 'linear-gradient(145deg, rgba(18,18,20,0.98) 0%, rgba(10,10,12,1) 100%)', border: '1px solid rgba(255,215,0,0.12)', boxShadow: '0 20px 60px rgba(0,0,0,0.7), 0 0 40px rgba(255,215,0,0.04)' }}>
-        <p className="text-[11px] font-semibold text-[#52525B] uppercase tracking-widest mb-1">CashPoints Earned</p>
+        <p className="leading-relaxed text-[11px] font-bold text-[#52525B] uppercase tracking-widest mb-1">CashPoints Earned</p>
         <p className="text-5xl font-bold tracking-tight" style={{ color: '#FFD700' }}>{totalPoints.toLocaleString('en-IN')}</p>
-        <p className="text-sm text-[#52525B] mt-2">Worth <span className="text-white font-semibold">{formatPaise(pointValue)}</span></p>
+        <p className="leading-relaxed tabular-nums text-sm text-[#52525B] mt-2">Worth <span className="leading-relaxed tabular-nums text-slate-200 font-bold">{formatPaise(pointValue)}</span></p>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "16px", borderTop: '1px solid rgba(255,255,255,0.05)' }} className=" mt-6 pt-5">
           <div>
-            <p className="text-[11px] text-[#52525B] uppercase tracking-widest mb-1">Overall Cap</p>
-            <p className="text-sm font-semibold text-white">{totalPoints} / {MONTHLY_CAP_OVERALL}</p>
+            <p className="leading-relaxed text-[11px] text-[#52525B] uppercase tracking-widest mb-1">Overall Cap</p>
+            <p className="leading-relaxed text-sm font-bold text-slate-200">{totalPoints} / {MONTHLY_CAP_OVERALL}</p>
             <div className="h-1.5 rounded-full mt-2 overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
               <div className="h-full rounded-full" style={{ width: `${overallPct}%`, background: overallPct >= 90 ? '#FF4757' : '#FFD700' }} />
             </div>
           </div>
           <div>
-            <p className="text-[11px] text-[#52525B] uppercase tracking-widest mb-1">Grocery 10X Cap</p>
-            <p className="text-sm font-semibold text-white">{groceryPoints} / {MONTHLY_CAP_GROCERY}</p>
+            <p className="leading-relaxed text-[11px] text-[#52525B] uppercase tracking-widest mb-1">Grocery 10X Cap</p>
+            <p className="leading-relaxed text-sm font-bold text-slate-200">{groceryPoints} / {MONTHLY_CAP_GROCERY}</p>
             <div className="h-1.5 rounded-full mt-2 overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
               <div className="h-full rounded-full" style={{ width: `${groceryPct}%`, background: groceryPct >= 90 ? '#FF4757' : '#FFD700' }} />
             </div>
@@ -73,10 +73,10 @@ export default async function RewardsPage() {
       {/* Recent earnings */}
       <div className="minimal-card rounded-2xl overflow-hidden">
         <div className="px-6 py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-          <p className="text-[11px] font-semibold text-[#52525B] uppercase tracking-widest">Recent Earnings</p>
+          <p className="leading-relaxed text-[11px] font-bold text-[#52525B] uppercase tracking-widest">Recent Earnings</p>
         </div>
         {rewards.length === 0 ? (
-          <div className="py-10 text-center text-sm text-[#52525B]">No points earned this month yet.</div>
+          <div className="leading-relaxed py-10 text-center text-sm text-[#52525B]">No points earned this month yet.</div>
         ) : (
           <div className="divide-y" style={{ borderColor: 'rgba(255,255,255,0.04)' }}>
             {rewards.map(r => (
@@ -85,16 +85,16 @@ export default async function RewardsPage() {
                   <Star size={14} className="text-[#FFD700]" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[13.5px] font-medium text-white truncate">
+                  <p className="text-[13.5px] font-normal text-slate-200 truncate">
                     {r.transaction.merchant?.displayName || r.transaction.merchantRaw || 'Purchase'}
                   </p>
-                  <p className="text-[11.5px] text-[#52525B] mt-0.5">
+                  <p className="leading-relaxed text-[11.5px] text-[#52525B] mt-0.5">
                     {r.ruleId === '10X_PARTNER' ? '10X Partner Bonus' : 'Standard 2X'} · {r.transaction.category?.name}
                   </p>
                 </div>
                 <div className="text-right flex-shrink-0">
                   <p className="text-[13.5px] font-bold text-[#FFD700]">+{r.cashpointsEarned} pts</p>
-                  <p className="text-[11px] text-[#52525B] mt-0.5">{formatPaise(r.transaction.amountPaise)}</p>
+                  <p className="leading-relaxed tabular-nums text-[11px] text-[#52525B] mt-0.5">{formatPaise(r.transaction.amountPaise)}</p>
                 </div>
               </div>
             ))}

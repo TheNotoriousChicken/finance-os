@@ -55,12 +55,12 @@ export default async function TransactionDetailPage({
       <div className="flex items-center gap-4">
         <Link 
           href="/transactions" 
-          className="w-10 h-10 rounded-full bg-[#18181B] border border-[#27272A] flex items-center justify-center text-[#A1A1AA] hover:text-white hover:bg-[#27272A] transition-colors"
+          className="w-10 h-10 rounded-full bg-[#18181B] border border-[#27272A] flex items-center justify-center text-[#A1A1AA] hover:text-slate-200 hover:bg-[#27272A] transition-colors"
         >
           <ArrowLeft size={20} />
         </Link>
         <div>
-          <h1 className="text-xl font-semibold text-white tracking-tight">Transaction Details</h1>
+          <h1 className="text-xl font-bold text-slate-200 tracking-tight">Transaction Details</h1>
         </div>
       </div>
 
@@ -68,18 +68,18 @@ export default async function TransactionDetailPage({
         <div className="p-8">
           <div className="flex flex-col items-center justify-center text-center pb-8 border-b border-[#27272A]">
             <div 
-              className="w-16 h-16 rounded-2xl flex items-center justify-center text-white mb-4"
+              className="w-16 h-16 rounded-2xl flex items-center justify-center text-slate-200 mb-4"
               style={{ background: transaction.category?.color ? `${transaction.category.color}40` : '#27272A' }}
             >
               {getCategoryIcon(transaction.category?.name)}
             </div>
-            <h2 className="text-xl font-medium text-white">
+            <h2 className="text-xl font-normal text-slate-200">
               {transaction.merchant?.displayName ?? transaction.merchantRaw ?? 'Unknown Merchant'}
             </h2>
-            <div className="mt-2 text-3xl font-semibold" style={{ color: isPositive ? '#00D68F' : '#FAFAFA' }}>
+            <div className="mt-2 text-3xl font-bold" style={{ color: isPositive ? '#00D68F' : '#FAFAFA' }}>
               {isPositive ? '+' : ''}{formatPaise(transaction.amountPaise)}
             </div>
-            <p className="text-sm text-[#A1A1AA] mt-2">
+            <p className="leading-relaxed text-sm text-[#A1A1AA] mt-2">
               {formatDate(transaction.date, 'long')}
             </p>
           </div>
@@ -89,17 +89,17 @@ export default async function TransactionDetailPage({
               <div>
                 <div className="flex items-center gap-2 text-[#A1A1AA] mb-1">
                   <Tag size={16} />
-                  <span className="text-xs font-medium uppercase tracking-wider">Category</span>
+                  <span className="leading-relaxed text-xs font-normal uppercase tracking-wider">Category</span>
                 </div>
-                <p className="text-white text-sm">{transaction.category?.name ?? 'Uncategorized'}</p>
+                <p className="leading-relaxed text-slate-200 text-sm">{transaction.category?.name ?? 'Uncategorized'}</p>
               </div>
 
               <div>
                 <div className="flex items-center gap-2 text-[#A1A1AA] mb-1">
                   <CreditCard size={16} />
-                  <span className="text-xs font-medium uppercase tracking-wider">Payment</span>
+                  <span className="leading-relaxed text-xs font-normal uppercase tracking-wider">Payment</span>
                 </div>
-                <p className="text-white text-sm">{transaction.paymentMethod?.name ?? 'Unknown'}</p>
+                <p className="leading-relaxed text-slate-200 text-sm">{transaction.paymentMethod?.name ?? 'Unknown'}</p>
               </div>
             </div>
           </div>
@@ -111,11 +111,11 @@ export default async function TransactionDetailPage({
                   <Star size={18} />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-white">Rewards Earned</p>
-                  <p className="text-xs text-[#A1A1AA]">Added to your MoneyBack+ balance</p>
+                  <p className="leading-relaxed text-sm font-normal text-slate-200">Rewards Earned</p>
+                  <p className="leading-relaxed text-xs text-[#A1A1AA]">Added to your MoneyBack+ balance</p>
                 </div>
               </div>
-              <Badge variant="gold" className="text-sm px-3 py-1">+{transaction.cashpointsEarned} pts</Badge>
+              <Badge variant="gold" className="leading-relaxed text-sm px-3 py-1">+{transaction.cashpointsEarned} pts</Badge>
             </div>
           )}
 
@@ -125,16 +125,16 @@ export default async function TransactionDetailPage({
 
           {auditLogs.length > 0 && (
             <div className="pt-6 mt-6 border-t border-[#27272A]">
-              <p className="text-[11px] font-semibold text-[#52525B] uppercase tracking-widest mb-3">Change History</p>
+              <p className="leading-relaxed text-[11px] font-bold text-[#52525B] uppercase tracking-widest mb-3">Change History</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {auditLogs.map(log => (
-                  <div key={log.id} className="flex items-start justify-between text-xs">
+                  <div key={log.id} className="leading-relaxed flex items-start justify-between text-xs">
                     <div>
-                      <span className="text-[#A1A1AA] font-medium">{log.field}</span>
+                      <span className="text-[#A1A1AA] font-normal">{log.field}</span>
                       <span className="text-[#52525B] mx-1">changed from</span>
-                      <span className="text-white">{log.oldValue ?? 'empty'}</span>
+                      <span className="text-slate-200">{log.oldValue ?? 'empty'}</span>
                       <span className="text-[#52525B] mx-1">to</span>
-                      <span className="text-white">{log.newValue ?? 'empty'}</span>
+                      <span className="text-slate-200">{log.newValue ?? 'empty'}</span>
                     </div>
                     <span className="text-[#52525B] ml-4 shrink-0">{new Date(log.changedAt).toLocaleString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                   </div>

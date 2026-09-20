@@ -14,7 +14,7 @@ export function DeleteTransactionButton({ transactionId }: { transactionId: numb
           router.push('/transactions');
         }
       }}
-      className="flex items-center gap-2 text-sm font-medium text-red-500/80 hover:text-red-500 hover:bg-red-500/10 px-4 py-2 rounded-lg transition-colors"
+      className="leading-relaxed flex items-center gap-2 text-sm font-normal text-red-500/80 hover:text-red-500 hover:bg-red-500/10 px-4 py-2 rounded-lg transition-colors"
     >
       <Trash2 size={16} />
       Delete Transaction

@@ -51,10 +51,10 @@ export function Progress({
   return (
     <div className={cn('space-y-2', className)}>
       {(label || showValue) && (
-        <div className="flex items-center justify-between text-sm">
-          {label && <span className="text-[#A1A1AA] font-medium">{label}</span>}
+        <div className="leading-relaxed flex items-center justify-between text-sm">
+          {label && <span className="text-[#A1A1AA] font-normal">{label}</span>}
           {showValue && (
-            <span className="font-semibold text-white font-mono">{pct.toFixed(pct % 1 === 0 ? 0 : 1)}%</span>
+            <span className="font-bold text-slate-200 font-mono">{pct.toFixed(pct % 1 === 0 ? 0 : 1)}%</span>
           )}
         </div>
       )}
@@ -64,7 +64,7 @@ export function Progress({
           style={{ width: `${pct}%`, boxShadow: pct > 0 ? variantGlow[displayVariant] : 'none' }}
         />
       </div>
-      {sublabel && <p className="text-xs text-[#71717A]">{sublabel}</p>}
+      {sublabel && <p className="leading-relaxed text-xs text-[#71717A]">{sublabel}</p>}
     </div>
   );
 }

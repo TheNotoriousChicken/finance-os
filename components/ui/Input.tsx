@@ -15,7 +15,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="space-y-1">
         {label && (
-          <label htmlFor={inputId} className="block text-sm font-medium text-[#A1A1AA]">
+          <label htmlFor={inputId} className="leading-relaxed block text-sm font-normal text-[#A1A1AA]">
             {label}
           </label>
         )}
@@ -29,7 +29,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             id={inputId}
             ref={ref}
             className={cn(
-              'w-full bg-[#18181B] border border-[#27272A] rounded-lg py-2.5 text-white text-sm placeholder-[#9CA3AF] transition-colors shadow-sm',
+              'w-full bg-[#18181B] border border-[#27272A] rounded-lg py-2.5 text-slate-200 text-sm placeholder-[#9CA3AF] transition-colors shadow-sm',
               'focus:outline-none focus:border-white focus:ring-1 focus:ring-white',
               error && 'border-[#FF4757] focus:border-[#FF4757] focus:ring-[#FF4757]',
               leftIcon ? 'pl-10' : 'pl-3',
@@ -44,8 +44,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             </div>
           )}
         </div>
-        {error && <p className="text-xs text-[#FF4757]">{error}</p>}
-        {hint && !error && <p className="text-xs text-[#6B6B6B]">{hint}</p>}
+        {error && <p className="leading-relaxed text-xs text-[#FF4757]">{error}</p>}
+        {hint && !error && <p className="leading-relaxed text-xs text-[#6B6B6B]">{hint}</p>}
       </div>
     );
   }

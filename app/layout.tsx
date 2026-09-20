@@ -1,5 +1,8 @@
 
 import type { Metadata, Viewport } from 'next';
+import { Plus_Jakarta_Sans } from 'next/font/google';
+
+const plusJakarta = Plus_Jakarta_Sans({ subsets: ['latin'], weight: ['400', '700'], variable: '--font-sans' });
 
 
 import './tailwind-built.css';
@@ -31,7 +34,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }
         `}} />
       </head>
-      <body className="font-sans antialiased text-[#FAFAFA]">
+      <body className={`${plusJakarta.variable} font-sans antialiased text-[#E4E4E7] tabular-nums`}>
         {children}
       </body>
     </html>

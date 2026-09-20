@@ -106,8 +106,8 @@ async function TransactionsList({ searchParams }: { searchParams: Record<string,
           style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}>
           <ReceiptText size={22} />
         </div>
-        <h3 className="text-white font-semibold mb-1">No transactions found</h3>
-        <p className="text-[#52525B] text-sm">Try adjusting your search.</p>
+        <h3 className="text-slate-200 font-bold mb-1">No transactions found</h3>
+        <p className="leading-relaxed text-[#52525B] text-sm">Try adjusting your search.</p>
       </div>
     );
   }
@@ -124,7 +124,7 @@ async function TransactionsList({ searchParams }: { searchParams: Record<string,
     <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
       {Object.entries(grouped).map(([dateLabel, txs]) => (
         <div key={dateLabel}>
-          <p className="text-[11px] font-semibold text-[#52525B] uppercase tracking-widest mb-2 px-1">{dateLabel}</p>
+          <p className="leading-relaxed text-[11px] font-bold text-[#52525B] uppercase tracking-widest mb-2 px-1">{dateLabel}</p>
           <div className="minimal-card rounded-2xl overflow-hidden">
             <div className="divide-y" style={{ borderColor: "rgba(255,255,255,0.04)" }}>
               {txs.map(tx => (
@@ -142,7 +142,7 @@ async function TransactionsList({ searchParams }: { searchParams: Record<string,
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="text-[13.5px] font-medium text-white truncate">
+                      <p className="text-[13.5px] font-normal text-slate-200 truncate">
                         {tx.merchant?.displayName ?? tx.merchantRaw ?? "Unknown"}
                       </p>
                       {tx.cashpointsEarned > 0 && (
@@ -151,7 +151,7 @@ async function TransactionsList({ searchParams }: { searchParams: Record<string,
                         </span>
                       )}
                     </div>
-                    <p className="text-[11.5px] text-[#52525B] mt-0.5 truncate">
+                    <p className="leading-relaxed text-[11.5px] text-[#52525B] mt-0.5 truncate">
                       {tx.category?.name ?? "Uncategorized"}
                       {tx.paymentMethod && ` · ${tx.paymentMethod.name}`}
                     </p>
@@ -159,7 +159,7 @@ async function TransactionsList({ searchParams }: { searchParams: Record<string,
 
                   <div className="flex flex-col items-end flex-shrink-0">
                     <span
-                      className="text-[13.5px] font-semibold"
+                      className="text-[13.5px] font-bold"
                       style={{ color: tx.type === "INCOME" || tx.type === "REFUND" ? "#00D68F" : "#FAFAFA" }}
                     >
                       {tx.type === "INCOME" || tx.type === "REFUND" ? "+" : "-"}{formatPaise(tx.amountPaise)}
@@ -177,15 +177,15 @@ async function TransactionsList({ searchParams }: { searchParams: Record<string,
         <div className="flex items-center justify-center gap-3 pt-2">
           {page > 1 && (
             <Link href={buildQuery(page - 1)}
-              className="px-5 py-2.5 rounded-xl text-[13px] font-medium text-[#A1A1AA] hover:text-white transition-colors"
+              className="leading-relaxed px-5 py-2.5 rounded-xl text-[13px] font-normal text-[#A1A1AA] hover:text-slate-200 transition-colors"
               style={{ border: "1px solid rgba(255,255,255,0.08)" }}>
               Previous
             </Link>
           )}
-          <span className="text-[13px] text-[#52525B] font-medium">{page} / {Math.ceil(total / limit)}</span>
+          <span className="leading-relaxed text-[13px] text-[#52525B] font-normal">{page} / {Math.ceil(total / limit)}</span>
           {page < Math.ceil(total / limit) && (
             <Link href={buildQuery(page + 1)}
-              className="px-5 py-2.5 rounded-xl text-[13px] font-medium text-[#A1A1AA] hover:text-white transition-colors"
+              className="leading-relaxed px-5 py-2.5 rounded-xl text-[13px] font-normal text-[#A1A1AA] hover:text-slate-200 transition-colors"
               style={{ border: "1px solid rgba(255,255,255,0.08)" }}>
               Next
             </Link>
@@ -208,11 +208,11 @@ export default async function TransactionsPage({
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-white">Transactions</h1>
-            <p className="text-sm text-[#52525B] mt-1">AI-powered search across all activity</p>
+            <p className="leading-relaxed text-sm text-[#52525B] mt-1">AI-powered search across all activity</p>
           </div>
           <a
             href="/api/export"
-            className="flex items-center gap-1.5 text-[12px] font-semibold text-[#52525B] hover:text-white transition-colors"
+            className="leading-relaxed flex items-center gap-1.5 text-[12px] font-bold text-[#52525B] hover:text-slate-200 transition-colors"
           >
             <Download size={14} />
             Export CSV

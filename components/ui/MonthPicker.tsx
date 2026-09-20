@@ -24,11 +24,11 @@ export function MonthPicker() {
 
   return (
     <div className="flex items-center gap-3">
-      <button onClick={() => navigate(-1)} className="w-8 h-8 rounded-lg flex items-center justify-center text-[#A1A1AA] hover:text-white hover:bg-white/8 transition-colors">
+      <button onClick={() => navigate(-1)} className="w-8 h-8 rounded-lg flex items-center justify-center text-[#A1A1AA] hover:text-slate-200 hover:bg-white/8 transition-colors">
         <ChevronLeft size={16} />
       </button>
-      <span className="text-[14px] font-semibold text-white min-w-[140px] text-center">{label}</span>
-      <button onClick={() => navigate(1)} disabled={isCurrentMonth} className="w-8 h-8 rounded-lg flex items-center justify-center text-[#A1A1AA] hover:text-white hover:bg-white/8 transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+      <span className="text-[14px] font-bold text-slate-200 min-w-[140px] text-center">{label}</span>
+      <button onClick={() => navigate(1)} disabled={isCurrentMonth} className="w-8 h-8 rounded-lg flex items-center justify-center text-[#A1A1AA] hover:text-slate-200 hover:bg-white/8 transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
         <ChevronRight size={16} />
       </button>
     </div>

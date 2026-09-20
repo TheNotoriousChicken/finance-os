@@ -4,5 +4,5 @@
 @source "../";
 
 @theme {
-  --font-sans: "Nexa", system-ui, sans-serif;
+  --font-sans: var(--font-sans), system-ui, sans-serif;
 }

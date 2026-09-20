@@ -20,7 +20,7 @@ export default async function AccountsPage() {
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }} className=" max-w-3xl mx-auto pb-10 page-enter">
       <div>
         <h1 className="text-3xl font-bold tracking-tight text-white">Accounts</h1>
-        <p className="text-sm text-[#52525B] mt-1">Cards and payment methods</p>
+        <p className="leading-relaxed text-sm text-[#52525B] mt-1">Cards and payment methods</p>
       </div>
 
       {/* Combined utilization */}
@@ -31,12 +31,12 @@ export default async function AccountsPage() {
         >
           <div className="flex items-center justify-between mb-5">
             <div>
-              <p className="text-[11px] font-semibold text-[#52525B] uppercase tracking-widest mb-1">Combined Utilization</p>
+              <p className="leading-relaxed text-[11px] font-bold text-[#52525B] uppercase tracking-widest mb-1">Combined Utilization</p>
               <p className="text-4xl font-bold tracking-tight" style={{ color: utilization.utilizationPct > 50 ? '#FFB547' : '#00D68F' }}>
                 {utilization.utilizationPct.toFixed(1)}%
               </p>
             </div>
-            <div className="px-3 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider"
+            <div className="leading-relaxed px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider"
               style={{
                 background: utilization.tier === 'low' || utilization.tier === 'moderate' ? 'rgba(0,214,143,0.1)' : 'rgba(255,71,87,0.1)',
                 color: utilization.tier === 'low' || utilization.tier === 'moderate' ? '#00D68F' : '#FF4757',
@@ -53,7 +53,7 @@ export default async function AccountsPage() {
               }}
             />
           </div>
-          <div className="flex justify-between mt-2 text-xs text-[#52525B]">
+          <div className="leading-relaxed flex justify-between mt-2 text-xs text-[#52525B]">
             <span>{formatPaise(utilization.totalOutstandingPaise)} outstanding</span>
             <span>{formatPaise(utilization.totalLimitPaise)} limit</span>
           </div>
@@ -63,7 +63,7 @@ export default async function AccountsPage() {
       {/* Credit Cards */}
       {creditCards.length > 0 && (
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-          <p className="text-[11px] font-semibold text-[#52525B] uppercase tracking-widest px-1">Credit Cards</p>
+          <p className="leading-relaxed text-[11px] font-bold text-[#52525B] uppercase tracking-widest px-1">Credit Cards</p>
           {creditCards.map(card => {
             const utilPct = card.limitPaise ? Math.round((card.outstandingPaise / card.limitPaise) * 100) : 0;
             const available = (card.limitPaise ?? 0) - card.outstandingPaise;
@@ -78,11 +78,11 @@ export default async function AccountsPage() {
                       <CreditCard size={18} style={{ color: card.color ?? '#A1A1AA' }} />
                     </div>
                     <div>
-                      <p className="text-[14px] font-semibold text-white">{card.name}</p>
-                      <p className="text-[12px] text-[#52525B] mt-0.5">Credit Card</p>
+                      <p className="text-[14px] font-bold text-slate-200">{card.name}</p>
+                      <p className="leading-relaxed text-[12px] text-[#52525B] mt-0.5">Credit Card</p>
                     </div>
                   </div>
-                  <span className="text-xs font-semibold px-2.5 py-1 rounded-full"
+                  <span className="leading-relaxed text-xs font-bold px-2.5 py-1 rounded-full"
                     style={{ background: utilPct > 75 ? 'rgba(255,71,87,0.1)' : 'rgba(0,214,143,0.1)', color: utilPct > 75 ? '#FF4757' : '#00D68F' }}>
                     {utilPct}%
                   </span>
@@ -94,12 +94,12 @@ export default async function AccountsPage() {
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "12px" }}>
                   <div>
-                    <p className="text-[11px] text-[#52525B] uppercase tracking-wider">Outstanding</p>
-                    <p className="text-[15px] font-bold text-white mt-0.5">{formatPaise(card.outstandingPaise)}</p>
+                    <p className="leading-relaxed text-[11px] text-[#52525B] uppercase tracking-wider">Outstanding</p>
+                    <p className="tabular-nums text-[15px] font-bold text-slate-200 mt-0.5">{formatPaise(card.outstandingPaise)}</p>
                   </div>
                   <div>
-                    <p className="text-[11px] text-[#52525B] uppercase tracking-wider">Available</p>
-                    <p className="text-[15px] font-bold text-[#00D68F] mt-0.5">{formatPaise(available)}</p>
+                    <p className="leading-relaxed text-[11px] text-[#52525B] uppercase tracking-wider">Available</p>
+                    <p className="tabular-nums text-[15px] font-bold text-[#00D68F] mt-0.5">{formatPaise(available)}</p>
                   </div>
                 </div>
                 {card.outstandingPaise > 0 && (
@@ -116,7 +116,7 @@ export default async function AccountsPage() {
       {/* Other methods */}
       {otherMethods.length > 0 && (
         <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-          <p className="text-[11px] font-semibold text-[#52525B] uppercase tracking-widest px-1">Other</p>
+          <p className="leading-relaxed text-[11px] font-bold text-[#52525B] uppercase tracking-widest px-1">Other</p>
           {otherMethods.map(pm => (
             <BankBalanceRow key={pm.id} account={pm} />
           ))}
@@ -128,8 +128,8 @@ export default async function AccountsPage() {
           <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
             <CreditCard size={22} className="text-[#52525B]" />
           </div>
-          <h3 className="text-white font-semibold mb-1">No accounts yet</h3>
-          <p className="text-[#52525B] text-sm">Add a payment method to start tracking</p>
+          <h3 className="text-slate-200 font-bold mb-1">No accounts yet</h3>
+          <p className="leading-relaxed text-[#52525B] text-sm">Add a payment method to start tracking</p>
         </div>
       )}
     </div>
