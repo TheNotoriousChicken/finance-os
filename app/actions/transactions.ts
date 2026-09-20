@@ -185,6 +185,7 @@ export async function deleteTransactionAction(txId: number) {
   const tx = await prisma.transaction.findUnique({ where: { id: txId } });
   if (!tx) throw new Error("Transaction not found");
 
+  if (!tx.paymentMethodId) return { success: true };
   const account = await prisma.paymentMethod.findUnique({ where: { id: tx.paymentMethodId } });
 
   if (account) {

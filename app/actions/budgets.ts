@@ -19,3 +19,23 @@ export async function saveBudgetAction(formData: FormData) {
 
   revalidatePath('/budgets');
 }
+export async function saveCategoryBudgetAction(formData: FormData) {
+  const month = formData.get('month') as string;
+  const categoryId = parseInt(formData.get('categoryId') as string);
+  const limit = parseFloat(formData.get('limit') as string);
+  z.object({ categoryId: z.number().int().positive(), limit: z.number().positive(), month: z.string().min(6) }).parse({ categoryId, limit, month });
+
+  const budget = await prisma.budget.findFirst();
+  if (!budget) {
+    // create a default budget if none exists
+    const newBudget = await prisma.budget.create({ data: { id: 1, month, totalLimitPaise: 5000000 } });
+    await prisma.budgetCategory.create({ data: { budgetId: newBudget.id, categoryId, limitPaise: Math.round(limit * 100) } });
+  } else {
+    await prisma.budgetCategory.upsert({
+      where: { budgetId_categoryId: { budgetId: budget.id, categoryId } },
+      update: { limitPaise: Math.round(limit * 100) },
+      create: { budgetId: budget.id, categoryId, limitPaise: Math.round(limit * 100) }
+    });
+  }
+  revalidatePath('/budgets');
+}

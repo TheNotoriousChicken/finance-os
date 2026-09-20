@@ -6,9 +6,9 @@ describe('Budget Engine', () => {
     const result = calcBudgetStatus({
       categoryId: 1,
       categoryName: 'Food',
-      limitPaise: 500000, // ₹5000
-      spentPaise: 100000, // ₹1000 = 20%
-      dayOfMonth: 10,
+      limitPaise: 500000,
+      spentPaise: 100000,
+      daysElapsed: 10,
       daysInMonth: 30
     });
     expect(result.status).toBe('on-track');
@@ -20,8 +20,8 @@ describe('Budget Engine', () => {
       categoryId: 1,
       categoryName: 'Food',
       limitPaise: 500000,
-      spentPaise: 600000, // Over budget
-      dayOfMonth: 15,
+      spentPaise: 600000,
+      daysElapsed: 15,
       daysInMonth: 30
     });
     expect(result.status).toBe('over-budget');
@@ -33,8 +33,8 @@ describe('Budget Engine', () => {
       categoryId: 1,
       categoryName: 'Food',
       limitPaise: 500000,
-      spentPaise: 350000, // ₹3500 by day 15 of 30 — projects to ₹7000
-      dayOfMonth: 15,
+      spentPaise: 350000,
+      daysElapsed: 15,
       daysInMonth: 30
     });
     expect(result.projectedMonthEndPaise).toBeGreaterThan(500000);
