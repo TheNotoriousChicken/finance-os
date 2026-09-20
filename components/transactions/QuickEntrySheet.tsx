@@ -149,13 +149,13 @@ export function QuickEntrySheet({ isOpen, onClose, categories, paymentMethods }:
   return (
     <>
       <div
-        className="fixed inset-0 z-50"
+        className="fixed inset-0 z-[60]"
         style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)' }}
         onClick={onClose}
       />
 
       <div
-        className="fixed bottom-0 left-0 right-0 z-50 sm:max-w-sm sm:mx-auto sm:top-1/2 sm:-translate-y-1/2 sm:bottom-auto flex flex-col"
+        className="fixed bottom-0 left-0 right-0 z-[60] sm:max-w-sm sm:mx-auto sm:top-1/2 sm:-translate-y-1/2 sm:bottom-auto flex flex-col"
         style={{
           background: 'rgba(10,10,12,0.97)',
           border: '1px solid rgba(255,255,255,0.1)',
@@ -243,9 +243,9 @@ export function QuickEntrySheet({ isOpen, onClose, categories, paymentMethods }:
               )}
 
               {/* Amount — large centered */}
-              <div className="relative" style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              <div className="relative flex flex-col gap-2">
                 <label className={labelClass}>Amount (Rs.)</label>
-                <div className="relative">
+                <div className="relative flex items-center justify-center border-b-2 border-white/10 pb-3 mt-1">
                   <input
                     ref={amountRef}
                     type="number"
@@ -255,13 +255,12 @@ export function QuickEntrySheet({ isOpen, onClose, categories, paymentMethods }:
                     value={amount}
                     onChange={e => setAmount(e.target.value)}
                     placeholder="0.00"
-                    className="w-full text-center text-4xl font-bold text-white placeholder-[#3F3F46] outline-none pb-3 bg-transparent"
-                    style={{ borderBottom: '2px solid rgba(255,255,255,0.1)' }}
+                    className="w-full text-center text-4xl font-bold text-white placeholder-[#3F3F46] outline-none bg-transparent h-12 leading-none"
                   />
                   <button
                     type="button"
                     onClick={handleOptimize}
-                    className="leading-relaxed absolute right-0 bottom-3 flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-lg"
+                    className="absolute right-0 flex items-center gap-1 text-[11px] font-bold px-2.5 py-1.5 rounded-lg transition-colors active:scale-95"
                     style={{ background: 'rgba(0,214,143,0.12)', color: '#00D68F' }}
                   >
                     <Zap size={11} /> Best Card

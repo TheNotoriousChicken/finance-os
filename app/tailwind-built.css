@@ -274,9 +274,6 @@
   .bottom-0 {
     bottom: 0px;
   }
-  .bottom-3 {
-    bottom: calc(var(--spacing) * 3);
-  }
   .left-0 {
     left: 0px;
   }
@@ -294,6 +291,9 @@
   }
   .z-50 {
     z-index: 50;
+  }
+  .z-\[60\] {
+    z-index: 60;
   }
   .mx-1 {
     margin-inline: var(--spacing);
@@ -1126,6 +1126,10 @@
   }
   .text-\[28px\] {
     font-size: 28px;
+  }
+  .leading-none {
+    --tw-leading: 1;
+    line-height: 1;
   }
   .leading-relaxed {
     --tw-leading: var(--leading-relaxed);
