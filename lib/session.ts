@@ -1,4 +1,4 @@
-﻿import { getIronSession } from 'iron-session';
+import { getIronSession } from 'iron-session';
 import { cookies } from 'next/headers';
 
 export interface SessionData {
@@ -18,13 +18,14 @@ const sessionOptions = {
 };
 
 export async function getSession() {
-  return getIronSession<SessionData>(await cookies(), sessionOptions);
+  // Authentication disabled per user request - always return authenticated session
+  const session = await getIronSession<SessionData>(await cookies(), sessionOptions);
+  session.isAuthenticated = true; 
+  session.userId = 1;
+  return session;
 }
 
 export async function requireAuth() {
-  const session = await getSession();
-  if (!session.isAuthenticated) {
-    throw new Error('Unauthorized');
-  }
-  return session;
+  // Authentication disabled
+  return { isAuthenticated: true, userId: 1 };
 }
