@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { DeleteTransactionButton } from '@/components/transactions/DeleteTransactionButton';
 
 function getCategoryIcon(categoryName: string | undefined) {
   if (!categoryName) return <HelpCircle size={28} />;
@@ -115,6 +116,10 @@ export default async function TransactionDetailPage({
               <Badge variant="gold" className="text-sm px-3 py-1">+{transaction.cashpointsEarned} pts</Badge>
             </div>
           )}
+
+          <div className="pt-6 mt-6 border-t border-[#27272A] flex justify-center">
+            <DeleteTransactionButton transactionId={transaction.id} />
+          </div>
         </div>
       </div>
     </div>

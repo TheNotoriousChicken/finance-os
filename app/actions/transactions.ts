@@ -149,3 +149,53 @@ export async function addTransactionAction(formData: FormData) {
 
   return { success: true };
 }
+
+export async function deleteTransactionAction(txId: number) {
+  const tx = await prisma.transaction.findUnique({ where: { id: txId } });
+  if (!tx) throw new Error("Transaction not found");
+
+  const account = await prisma.paymentMethod.findUnique({ where: { id: tx.paymentMethodId } });
+
+  if (account) {
+    if (account.type === 'CREDIT_CARD') {
+      if (tx.type === 'EXPENSE') {
+        await prisma.paymentMethod.update({
+          where: { id: account.id },
+          data: { outstandingPaise: { decrement: tx.amountPaise } }
+        });
+      } else if (tx.type === 'REFUND' || tx.type === 'INCOME') {
+        await prisma.paymentMethod.update({
+          where: { id: account.id },
+          data: { outstandingPaise: { increment: tx.amountPaise } }
+        });
+      }
+    } else {
+      if (tx.type === 'EXPENSE') {
+        await prisma.paymentMethod.update({
+          where: { id: account.id },
+          data: { balancePaise: { increment: tx.amountPaise } }
+        });
+      } else if (tx.type === 'REFUND' || tx.type === 'INCOME') {
+        await prisma.paymentMethod.update({
+          where: { id: account.id },
+          data: { balancePaise: { decrement: tx.amountPaise } }
+        });
+      }
+    }
+  }
+
+  // Also remove associated rewards if any
+  if (tx.cashpointsEarned > 0) {
+    await prisma.reward.deleteMany({ where: { transactionId: tx.id } });
+  }
+
+  await prisma.transaction.delete({ where: { id: tx.id } });
+
+  revalidatePath('/');
+  revalidatePath('/transactions');
+  revalidatePath('/accounts');
+  revalidatePath('/rewards');
+  revalidatePath('/budgets');
+  
+  return { success: true };
+}
