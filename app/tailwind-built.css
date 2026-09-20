@@ -540,6 +540,9 @@
   .flex-1 {
     flex: 1;
   }
+  .flex-\[1\.5\] {
+    flex: 1.5;
+  }
   .flex-shrink-0 {
     flex-shrink: 0;
   }
@@ -1200,8 +1203,14 @@
   .text-\[\#A1A1AA\] {
     color: #A1A1AA;
   }
+  .text-\[\#A855F7\] {
+    color: #A855F7;
+  }
   .text-\[\#D4D4D8\] {
     color: #D4D4D8;
+  }
+  .text-\[\#D8B4FE\] {
+    color: #D8B4FE;
   }
   .text-\[\#FAFAFA\] {
     color: #FAFAFA;
@@ -1553,6 +1562,9 @@
   .focus\:ring-\[\#3F3F46\]:focus {
     --tw-ring-color: #3F3F46;
   }
+  .focus\:ring-\[\#9333EA\]\/50:focus {
+    --tw-ring-color: color-mix(in oklab, #9333EA 50%, transparent);
+  }
   .focus\:ring-\[\#FF4757\]:focus {
     --tw-ring-color: #FF4757;
   }
@@ -1624,12 +1636,18 @@
     .sm\:mx-auto {
       margin-inline: auto;
     }
+    .sm\:inline {
+      display: inline;
+    }
     .sm\:max-w-sm {
       max-width: var(--container-sm);
     }
     .sm\:-translate-y-1\/2 {
       --tw-translate-y: calc(calc(1 / 2 * 100%) * -1);
       translate: var(--tw-translate-x) var(--tw-translate-y);
+    }
+    .sm\:flex-row {
+      flex-direction: row;
     }
   }
   @media (width >= 64rem) {
