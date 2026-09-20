@@ -2,7 +2,8 @@ export const dynamic = 'force-dynamic';
 
 import { prisma } from '@/lib/prisma';
 import { formatPaise } from '@/lib/money';
-import { Star } from 'lucide-react';
+import { Star, Calculator } from 'lucide-react';
+import Link from 'next/link';
 import { MONTHLY_CAP_OVERALL, MONTHLY_CAP_GROCERY } from '@/lib/engine/rewards';
 
 export default async function RewardsPage() {
@@ -34,9 +35,15 @@ export default async function RewardsPage() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }} className=" max-w-3xl mx-auto pb-10 page-enter">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight text-white">Rewards</h1>
-        <p className="text-sm text-[#52525B] mt-1">{pm?.name ?? 'MoneyBack+'} · {cardMonth}</p>
+            <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-white">Rewards</h1>
+          <p className="text-sm text-[#52525B] mt-1">{pm?.name ?? 'MoneyBack+'} - {cardMonth}</p>
+        </div>
+        <Link href="/rewards/calculator" className="flex items-center gap-2 h-10 px-4 rounded-xl text-[13px] font-semibold text-[#FFD700] hover:bg-[#FFD700]/10 transition-colors" style={{ background: 'rgba(255,215,0,0.05)', border: '1px solid rgba(255,215,0,0.1)' }}>
+          <Calculator size={15} />
+          Calculator
+        </Link>
       </div>
 
       {/* Hero points card */}

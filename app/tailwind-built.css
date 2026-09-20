@@ -282,6 +282,9 @@
   .left-3 {
     left: calc(var(--spacing) * 3);
   }
+  .left-4 {
+    left: calc(var(--spacing) * 4);
+  }
   .z-10 {
     z-index: 10;
   }
@@ -344,6 +347,9 @@
   }
   .mb-6 {
     margin-bottom: calc(var(--spacing) * 6);
+  }
+  .mb-8 {
+    margin-bottom: calc(var(--spacing) * 8);
   }
   .mb-12 {
     margin-bottom: calc(var(--spacing) * 12);
@@ -1000,6 +1006,9 @@
   .pr-3 {
     padding-right: calc(var(--spacing) * 3);
   }
+  .pr-4 {
+    padding-right: calc(var(--spacing) * 4);
+  }
   .pr-10 {
     padding-right: calc(var(--spacing) * 10);
   }
@@ -1023,6 +1032,9 @@
   }
   .pl-3 {
     padding-left: calc(var(--spacing) * 3);
+  }
+  .pl-8 {
+    padding-left: calc(var(--spacing) * 8);
   }
   .pl-10 {
     padding-left: calc(var(--spacing) * 10);
@@ -1197,6 +1209,9 @@
   .text-\[\#FF4757\] {
     color: #FF4757;
   }
+  .text-\[\#FF4757\]\/90 {
+    color: color-mix(in oklab, #FF4757 90%, transparent);
+  }
   .text-\[\#FFB547\] {
     color: #FFB547;
   }
@@ -1225,6 +1240,12 @@
     color: color-mix(in srgb, #fff 40%, transparent);
     @supports (color: color-mix(in lab, red, red)) {
       color: color-mix(in oklab, var(--color-white) 40%, transparent);
+    }
+  }
+  .text-white\/50 {
+    color: color-mix(in srgb, #fff 50%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      color: color-mix(in oklab, var(--color-white) 50%, transparent);
     }
   }
   .text-white\/60 {
@@ -1419,6 +1440,9 @@
     .hover\:bg-\[\#FF6B78\]:hover {
       background-color: #FF6B78;
     }
+    .hover\:bg-\[\#FFD700\]\/10:hover {
+      background-color: color-mix(in oklab, #FFD700 10%, transparent);
+    }
     .hover\:bg-red-500\/10:hover {
       background-color: color-mix(in srgb, oklch(63.7% 0.237 25.331) 10%, transparent);
     }
@@ -1531,6 +1555,9 @@
   }
   .focus\:ring-\[\#FF4757\]:focus {
     --tw-ring-color: #FF4757;
+  }
+  .focus\:ring-\[\#FFD700\]\/50:focus {
+    --tw-ring-color: color-mix(in oklab, #FFD700 50%, transparent);
   }
   .focus\:ring-white:focus {
     --tw-ring-color: var(--color-white);
