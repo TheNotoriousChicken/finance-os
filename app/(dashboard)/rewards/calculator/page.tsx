@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronLeft, Info, Sparkles, Loader2, Search } from 'lucide-react';
+import { ChevronLeft, Sparkles, Loader2, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { formatPaise } from '@/lib/money';
 import { classifySpendGemini } from '@/app/actions/aiRewards';
@@ -12,24 +12,31 @@ export default function RewardsCalculatorPage() {
   const [amountStr, setAmountStr] = useState('');
   const [merchantStr, setMerchantStr] = useState('');
   
-  // AI Outputs
-  const [spendType, setSpendType] = useState<'normal' | '10x' | 'grocery' | 'excluded'>('normal');
-  const [isTataBrand, setIsTataBrand] = useState(false);
-  const [aiReason, setAiReason] = useState<string | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
-
-  const amountPaise = Math.round((parseFloat(amountStr) || 0) * 100);
+  const [aiReason, setAiReason] = useState<string | null>(null);
+  const [analyzedState, setAnalyzedState] = useState<{
+    amountPaise: number;
+    merchant: string;
+    spendType: 'normal' | '10x' | 'grocery' | 'excluded';
+    isTataBrand: boolean;
+  } | null>(null);
 
   const handleAskGemini = async () => {
-    if (!merchantStr.trim()) return;
+    if (!merchantStr.trim() || !amountStr) return;
     setAiLoading(true);
     setAiReason(null);
+    setAnalyzedState(null); // clear previous while loading
     try {
       const res = await classifySpendGemini(merchantStr);
-      setMerchantStr(res.merchant);
-      setSpendType(res.type);
-      setIsTataBrand(res.isTataBrand || false);
+      const parsedAmount = Math.round((parseFloat(amountStr) || 0) * 100);
+      setMerchantStr(res.merchant); // auto-format the name
       setAiReason(res.reason);
+      setAnalyzedState({
+        amountPaise: parsedAmount,
+        merchant: res.merchant,
+        spendType: res.type,
+        isTataBrand: res.isTataBrand || false,
+      });
     } catch (e) {
       alert(`Failed to analyze with Gemini: ${e instanceof Error ? e.message : String(e)}`);
     } finally {
@@ -37,62 +44,82 @@ export default function RewardsCalculatorPage() {
     }
   };
 
-  // Convert AI spendType to an explicit category for the deterministic engine
-  const categoryName = spendType === 'excluded' ? 'Rent' : spendType === 'grocery' ? 'Groceries' : 'Shopping';
-  const is10x = spendType === '10x' || spendType === 'grocery';
-  const isGrocery = spendType === 'grocery';
+  // Derive results ONLY if analyzedState exists
+  let mbValuePaise = 0;
+  let mbRate = 0;
+  let mbResult: any = null;
+  
+  let neuSwipeValue = 0;
+  let neuSwipeRate = 0;
+  let neuSwipeCoins = 0;
+  let neuSwipeResult: any = null;
 
-  // 1. HDFC MoneyBack+ (Swipe/Online)
-  const mbResult = calculateCashPoints({
-    amountPaise,
-    paymentMethodId: 1, 
-    moneybackCardId: 1, 
-    merchantNormalizedName: merchantStr || (is10x ? 'amazon' : 'some store'),
-    categoryName,
-    is10xPartner: is10x,
-    isGroceryMerchant: isGrocery,
-    alreadyEarnedOverall: 0,
-    alreadyEarnedGrocery: 0,
-  });
-  const mbValuePaise = mbResult.isExcluded ? 0 : mbResult.cashpointsEarned * 25;
-  const mbRate = amountPaise > 0 ? (mbValuePaise / amountPaise) * 100 : 0;
+  let neuUpiValue = 0;
+  let neuUpiRate = 0;
+  let neuUpiCoins = 0;
+  let neuUpiResult: any = null;
 
-  // 2. Tata Neu Plus (Swipe/Online)
-  const neuSwipeResult = calculateNeuCoins({
-    amountPaise,
-    paymentMethodId: 2,
-    neuPlusCardId: 2,
-    merchantNormalizedName: merchantStr || (isTataBrand ? 'croma' : 'some store'),
-    categoryName,
-    paymentChannel: 'SWIPE',
-    isTataBrand,
-    isTataNeuApp: false,
-    isEmi: false,
-    alreadyEarnedUpi: 0
-  });
-  const neuSwipeCoins = neuSwipeResult.neuCoinsEarned + neuSwipeResult.neuPassAcceleratedEarned;
-  const neuSwipeValue = neuSwipeResult.isExcluded ? 0 : neuSwipeCoins * 100;
-  const neuSwipeRate = amountPaise > 0 ? (neuSwipeValue / amountPaise) * 100 : 0;
+  let maxYield = 0;
+  let is10x = false;
+  let isTataBrand = false;
 
-  // 3. Tata Neu Plus (UPI)
-  const neuUpiResult = calculateNeuCoins({
-    amountPaise,
-    paymentMethodId: 2,
-    neuPlusCardId: 2,
-    merchantNormalizedName: merchantStr || 'store',
-    categoryName,
-    paymentChannel: 'UPI',
-    isTataBrand,
-    isTataNeuApp: false,
-    isEmi: false,
-    alreadyEarnedUpi: 0
-  });
-  const neuUpiCoins = neuUpiResult.neuCoinsEarned + neuUpiResult.neuPassAcceleratedEarned;
-  const neuUpiValue = neuUpiResult.isExcluded ? 0 : neuUpiCoins * 100;
-  const neuUpiRate = amountPaise > 0 ? (neuUpiValue / amountPaise) * 100 : 0;
+  if (analyzedState) {
+    const categoryName = analyzedState.spendType === 'excluded' ? 'Rent' : analyzedState.spendType === 'grocery' ? 'Groceries' : 'Shopping';
+    is10x = analyzedState.spendType === '10x' || analyzedState.spendType === 'grocery';
+    const isGrocery = analyzedState.spendType === 'grocery';
+    isTataBrand = analyzedState.isTataBrand;
 
-  // Determine the best yield
-  const maxYield = Math.max(mbValuePaise, neuSwipeValue, neuUpiValue);
+    // 1. MB+
+    mbResult = calculateCashPoints({
+      amountPaise: analyzedState.amountPaise,
+      paymentMethodId: 1, 
+      moneybackCardId: 1, 
+      merchantNormalizedName: analyzedState.merchant,
+      categoryName,
+      is10xPartner: is10x,
+      isGroceryMerchant: isGrocery,
+      alreadyEarnedOverall: 0,
+      alreadyEarnedGrocery: 0,
+    });
+    mbValuePaise = mbResult.isExcluded ? 0 : mbResult.cashpointsEarned * 25;
+    mbRate = analyzedState.amountPaise > 0 ? (mbValuePaise / analyzedState.amountPaise) * 100 : 0;
+
+    // 2. Neu Swipe
+    neuSwipeResult = calculateNeuCoins({
+      amountPaise: analyzedState.amountPaise,
+      paymentMethodId: 2,
+      neuPlusCardId: 2,
+      merchantNormalizedName: analyzedState.merchant,
+      categoryName,
+      paymentChannel: 'SWIPE',
+      isTataBrand,
+      isTataNeuApp: false,
+      isEmi: false,
+      alreadyEarnedUpi: 0
+    });
+    neuSwipeCoins = neuSwipeResult.neuCoinsEarned + neuSwipeResult.neuPassAcceleratedEarned;
+    neuSwipeValue = neuSwipeResult.isExcluded ? 0 : neuSwipeCoins * 100;
+    neuSwipeRate = analyzedState.amountPaise > 0 ? (neuSwipeValue / analyzedState.amountPaise) * 100 : 0;
+
+    // 3. Neu UPI
+    neuUpiResult = calculateNeuCoins({
+      amountPaise: analyzedState.amountPaise,
+      paymentMethodId: 2,
+      neuPlusCardId: 2,
+      merchantNormalizedName: analyzedState.merchant,
+      categoryName,
+      paymentChannel: 'UPI',
+      isTataBrand,
+      isTataNeuApp: false,
+      isEmi: false,
+      alreadyEarnedUpi: 0
+    });
+    neuUpiCoins = neuUpiResult.neuCoinsEarned + neuUpiResult.neuPassAcceleratedEarned;
+    neuUpiValue = neuUpiResult.isExcluded ? 0 : neuUpiCoins * 100;
+    neuUpiRate = analyzedState.amountPaise > 0 ? (neuUpiValue / analyzedState.amountPaise) * 100 : 0;
+
+    maxYield = Math.max(mbValuePaise, neuSwipeValue, neuUpiValue);
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }} className="max-w-2xl mx-auto pb-10 page-enter">
@@ -139,7 +166,7 @@ export default function RewardsCalculatorPage() {
               />
               <button 
                 onClick={handleAskGemini}
-                disabled={aiLoading || !merchantStr.trim()}
+                disabled={aiLoading || !merchantStr.trim() || !amountStr}
                 className="h-14 px-5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all disabled:opacity-50"
                 style={{ background: 'linear-gradient(135deg, #9333EA 0%, #4F46E5 100%)', color: 'white', border: 'none', boxShadow: '0 4px 15px rgba(147, 51, 234, 0.3)' }}
               >
@@ -151,7 +178,7 @@ export default function RewardsCalculatorPage() {
         </div>
 
         {/* AI Explanation Box */}
-        {aiReason && (
+        {aiReason && analyzedState && (
           <div className="mb-6 p-4 rounded-xl flex items-start gap-3 animate-in fade-in slide-in-from-top-2" style={{ background: 'rgba(147, 51, 234, 0.1)', border: '1px solid rgba(147, 51, 234, 0.2)' }}>
             <Sparkles size={18} className="text-[#A855F7] shrink-0 mt-0.5" />
             <div>
@@ -161,125 +188,138 @@ export default function RewardsCalculatorPage() {
           </div>
         )}
 
+        {/* Loading State */}
+        {aiLoading && (
+          <div className="flex flex-col items-center justify-center py-10 opacity-70">
+            <Loader2 size={24} className="animate-spin text-[#A855F7] mb-3" />
+            <p className="text-sm text-slate-200">Analyzing rules...</p>
+          </div>
+        )}
+
+        {/* Empty State */}
+        {!analyzedState && !aiLoading && (
+          <div className="flex flex-col items-center justify-center py-12 px-4 text-center border border-dashed border-[#27272A] rounded-xl bg-black/20">
+            <Sparkles size={24} className="text-[#52525B] mb-3" />
+            <p className="text-[14px] font-bold text-slate-200 mb-1">Ready to Evaluate</p>
+            <p className="text-[13px] text-[#A1A1AA]">Enter an amount and merchant, then click Analyze to compare your cards instantly.</p>
+          </div>
+        )}
+
         {/* Results */}
-        <div className="flex flex-col gap-4">
-           {/* Option 1: MB+ Swipe */}
-           <div className={`p-4 rounded-xl flex items-center justify-between border ${maxYield > 0 && mbValuePaise === maxYield && !mbResult.isExcluded ? 'border-[#FFD700] bg-[#FFD700]/5' : 'border-[#27272A] bg-black/40'} transition-all relative`}>
-              <div className="flex-1">
-                 <div className="flex items-center gap-3 mb-1">
-                   <p className="text-[14px] font-bold text-slate-200">HDFC MoneyBack+</p>
-                   <span className="text-[10px] uppercase font-bold tracking-wider text-[#A1A1AA] px-2 py-0.5 rounded-md bg-[#27272A]">Swipe / Online</span>
-                 </div>
-                 <div className="flex items-center gap-2 text-[12px]">
+        {analyzedState && !aiLoading && (
+          <div className="flex flex-col gap-4 animate-in fade-in zoom-in-95 duration-200">
+             {/* Option 1: MB+ Swipe */}
+             <div className={`p-5 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between border ${maxYield > 0 && mbValuePaise === maxYield && !mbResult.isExcluded ? 'border-[#FFD700] bg-[#FFD700]/5' : 'border-[#27272A] bg-[#0C0C0E]'} transition-all gap-4`}>
+                <div className="flex-1">
+                   <div className="flex items-center gap-3 mb-1.5">
+                     <p className="text-[15px] font-bold text-slate-200">HDFC MoneyBack+</p>
+                     <span className="text-[10px] uppercase font-bold tracking-wider text-[#A1A1AA] px-2 py-0.5 rounded-md bg-[#27272A]">Swipe / Online</span>
+                     {maxYield > 0 && mbValuePaise === maxYield && !mbResult.isExcluded && (
+                       <div className="px-2 py-0.5 bg-[#FFD700]/20 text-[#FFD700] text-[10px] font-bold rounded-md uppercase tracking-wider flex items-center gap-1">
+                         <Sparkles size={10} /> Best
+                       </div>
+                     )}
+                   </div>
+                   <div className="flex items-center gap-2 text-[13px]">
+                     {mbResult.isExcluded ? (
+                       <span className="text-[#FF4757] font-bold">Excluded Category</span>
+                     ) : (
+                       <>
+                         <span className="text-[#A1A1AA]">Yield: <span className="text-slate-200 font-bold">{mbRate.toFixed(2)}%</span></span>
+                         {is10x && <span className="text-[#00D68F] font-bold bg-[#00D68F]/10 px-1.5 py-0.5 rounded ml-1 text-[11px]">10X Partner</span>}
+                       </>
+                     )}
+                   </div>
+                </div>
+                <div className="text-left sm:text-right">
                    {mbResult.isExcluded ? (
-                     <span className="text-[#FF4757] font-bold">Excluded Category</span>
+                     <p className="text-xl font-bold text-[#71717A] tabular-nums">₹0</p>
                    ) : (
                      <>
-                       <span className="text-[#A1A1AA]">Yield: <span className="text-slate-200 font-bold">{mbRate.toFixed(2)}%</span></span>
-                       {is10x && <span className="text-[#00D68F] font-bold bg-[#00D68F]/10 px-1.5 rounded">10X Partner</span>}
+                       <p className="text-xl font-bold text-[#FFD700] tabular-nums leading-none mb-1">
+                          {mbResult.cashpointsEarned} <span className="text-[12px] text-[#A1A1AA]">pts</span>
+                       </p>
+                       <p className="text-[12px] font-bold text-white">Value: {formatPaise(mbValuePaise)}</p>
                      </>
                    )}
-                 </div>
-              </div>
-              <div className="text-right">
-                 {mbResult.isExcluded ? (
-                   <p className="text-lg font-bold text-[#71717A] tabular-nums">₹0</p>
-                 ) : (
-                   <>
-                     <p className="text-lg font-bold text-[#FFD700] tabular-nums">
-                        {mbResult.cashpointsEarned} <span className="text-[12px] text-[#A1A1AA]">pts</span>
-                     </p>
-                     <p className="text-[11px] font-bold text-white mt-0.5">Value: {formatPaise(mbValuePaise)}</p>
-                   </>
-                 )}
-              </div>
-              {maxYield > 0 && mbValuePaise === maxYield && !mbResult.isExcluded && (
-                 <div className="absolute right-4 top-1/2 -translate-y-1/2 -mr-14 hidden sm:flex">
-                   <div className="px-2 py-1 bg-[#FFD700]/20 text-[#FFD700] text-[10px] font-bold rounded-lg uppercase tracking-wider flex items-center gap-1">
-                     <Sparkles size={10} /> Best
-                   </div>
-                 </div>
-              )}
-           </div>
+                </div>
+             </div>
 
-           {/* Option 2: Neu Swipe */}
-           <div className={`p-4 rounded-xl flex items-center justify-between border ${maxYield > 0 && neuSwipeValue === maxYield && !neuSwipeResult.isExcluded ? 'border-[#00D68F] bg-[#00D68F]/5' : 'border-[#27272A] bg-black/40'} transition-all relative`}>
-              <div className="flex-1">
-                 <div className="flex items-center gap-3 mb-1">
-                   <p className="text-[14px] font-bold text-slate-200">Tata Neu Plus</p>
-                   <span className="text-[10px] uppercase font-bold tracking-wider text-[#A1A1AA] px-2 py-0.5 rounded-md bg-[#27272A]">Swipe / Online</span>
-                 </div>
-                 <div className="flex items-center gap-2 text-[12px]">
+             {/* Option 2: Neu Swipe */}
+             <div className={`p-5 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between border ${maxYield > 0 && neuSwipeValue === maxYield && !neuSwipeResult.isExcluded ? 'border-[#00D68F] bg-[#00D68F]/5' : 'border-[#27272A] bg-[#0C0C0E]'} transition-all gap-4`}>
+                <div className="flex-1">
+                   <div className="flex items-center gap-3 mb-1.5">
+                     <p className="text-[15px] font-bold text-slate-200">Tata Neu Plus</p>
+                     <span className="text-[10px] uppercase font-bold tracking-wider text-[#A1A1AA] px-2 py-0.5 rounded-md bg-[#27272A]">Swipe / Online</span>
+                     {maxYield > 0 && neuSwipeValue === maxYield && !neuSwipeResult.isExcluded && (
+                       <div className="px-2 py-0.5 bg-[#00D68F]/20 text-[#00D68F] text-[10px] font-bold rounded-md uppercase tracking-wider flex items-center gap-1">
+                         <Sparkles size={10} /> Best
+                       </div>
+                     )}
+                   </div>
+                   <div className="flex items-center gap-2 text-[13px]">
+                     {neuSwipeResult.isExcluded ? (
+                       <span className="text-[#FF4757] font-bold">Excluded Category</span>
+                     ) : (
+                       <>
+                         <span className="text-[#A1A1AA]">Yield: <span className="text-slate-200 font-bold">{neuSwipeRate.toFixed(2)}%</span></span>
+                         {isTataBrand && <span className="text-[#00D68F] font-bold bg-[#00D68F]/10 px-1.5 py-0.5 rounded ml-1 text-[11px]">2% Tata Brand</span>}
+                       </>
+                     )}
+                   </div>
+                </div>
+                <div className="text-left sm:text-right">
                    {neuSwipeResult.isExcluded ? (
-                     <span className="text-[#FF4757] font-bold">Excluded Category</span>
+                     <p className="text-xl font-bold text-[#71717A] tabular-nums">₹0</p>
                    ) : (
                      <>
-                       <span className="text-[#A1A1AA]">Yield: <span className="text-slate-200 font-bold">{neuSwipeRate.toFixed(2)}%</span></span>
-                       {isTataBrand && <span className="text-[#00D68F] font-bold bg-[#00D68F]/10 px-1.5 rounded">2% Tata Brand</span>}
+                       <p className="text-xl font-bold text-[#00D68F] tabular-nums leading-none mb-1">
+                          {neuSwipeCoins} <span className="text-[12px] text-[#A1A1AA]">coins</span>
+                       </p>
+                       <p className="text-[12px] font-bold text-white">Value: {formatPaise(neuSwipeValue)}</p>
                      </>
                    )}
-                 </div>
-              </div>
-              <div className="text-right">
-                 {neuSwipeResult.isExcluded ? (
-                   <p className="text-lg font-bold text-[#71717A] tabular-nums">₹0</p>
-                 ) : (
-                   <>
-                     <p className="text-lg font-bold text-[#00D68F] tabular-nums">
-                        {neuSwipeCoins} <span className="text-[12px] text-[#A1A1AA]">coins</span>
-                     </p>
-                     <p className="text-[11px] font-bold text-white mt-0.5">Value: {formatPaise(neuSwipeValue)}</p>
-                   </>
-                 )}
-              </div>
-              {maxYield > 0 && neuSwipeValue === maxYield && !neuSwipeResult.isExcluded && (
-                 <div className="absolute right-4 top-1/2 -translate-y-1/2 -mr-14 hidden sm:flex">
-                   <div className="px-2 py-1 bg-[#00D68F]/20 text-[#00D68F] text-[10px] font-bold rounded-lg uppercase tracking-wider flex items-center gap-1">
-                     <Sparkles size={10} /> Best
-                   </div>
-                 </div>
-              )}
-           </div>
+                </div>
+             </div>
 
-           {/* Option 3: Neu UPI */}
-           <div className={`p-4 rounded-xl flex items-center justify-between border ${maxYield > 0 && neuUpiValue === maxYield && !neuUpiResult.isExcluded ? 'border-[#3B82F6] bg-[#3B82F6]/5' : 'border-[#27272A] bg-black/40'} transition-all relative`}>
-              <div className="flex-1">
-                 <div className="flex items-center gap-3 mb-1">
-                   <p className="text-[14px] font-bold text-slate-200">Tata Neu Plus</p>
-                   <span className="text-[10px] uppercase font-bold tracking-wider text-[#3B82F6] px-2 py-0.5 rounded-md bg-[#3B82F6]/20">UPI</span>
-                 </div>
-                 <div className="flex items-center gap-2 text-[12px]">
+             {/* Option 3: Neu UPI */}
+             <div className={`p-5 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between border ${maxYield > 0 && neuUpiValue === maxYield && !neuUpiResult.isExcluded ? 'border-[#3B82F6] bg-[#3B82F6]/5' : 'border-[#27272A] bg-[#0C0C0E]'} transition-all gap-4`}>
+                <div className="flex-1">
+                   <div className="flex items-center gap-3 mb-1.5">
+                     <p className="text-[15px] font-bold text-slate-200">Tata Neu Plus</p>
+                     <span className="text-[10px] uppercase font-bold tracking-wider text-[#3B82F6] px-2 py-0.5 rounded-md bg-[#3B82F6]/20">UPI</span>
+                     {maxYield > 0 && neuUpiValue === maxYield && !neuUpiResult.isExcluded && (
+                       <div className="px-2 py-0.5 bg-[#3B82F6]/20 text-[#3B82F6] text-[10px] font-bold rounded-md uppercase tracking-wider flex items-center gap-1">
+                         <Sparkles size={10} /> Best
+                       </div>
+                     )}
+                   </div>
+                   <div className="flex items-center gap-2 text-[13px]">
+                     {neuUpiResult.isExcluded ? (
+                       <span className="text-[#FF4757] font-bold">Not eligible for UPI rewards</span>
+                     ) : (
+                       <>
+                         <span className="text-[#A1A1AA]">Yield: <span className="text-slate-200 font-bold">{neuUpiRate.toFixed(2)}%</span></span>
+                       </>
+                     )}
+                   </div>
+                </div>
+                <div className="text-left sm:text-right">
                    {neuUpiResult.isExcluded ? (
-                     <span className="text-[#FF4757] font-bold">Not eligible for UPI rewards</span>
+                     <p className="text-xl font-bold text-[#71717A] tabular-nums">₹0</p>
                    ) : (
                      <>
-                       <span className="text-[#A1A1AA]">Yield: <span className="text-slate-200 font-bold">{neuUpiRate.toFixed(2)}%</span></span>
+                       <p className="text-xl font-bold text-[#3B82F6] tabular-nums leading-none mb-1">
+                          {neuUpiCoins} <span className="text-[12px] text-[#A1A1AA]">coins</span>
+                       </p>
+                       <p className="text-[12px] font-bold text-white">Value: {formatPaise(neuUpiValue)}</p>
                      </>
                    )}
-                 </div>
-              </div>
-              <div className="text-right">
-                 {neuUpiResult.isExcluded ? (
-                   <p className="text-lg font-bold text-[#71717A] tabular-nums">₹0</p>
-                 ) : (
-                   <>
-                     <p className="text-lg font-bold text-[#3B82F6] tabular-nums">
-                        {neuUpiCoins} <span className="text-[12px] text-[#A1A1AA]">coins</span>
-                     </p>
-                     <p className="text-[11px] font-bold text-white mt-0.5">Value: {formatPaise(neuUpiValue)}</p>
-                   </>
-                 )}
-              </div>
-              {maxYield > 0 && neuUpiValue === maxYield && !neuUpiResult.isExcluded && (
-                 <div className="absolute right-4 top-1/2 -translate-y-1/2 -mr-14 hidden sm:flex">
-                   <div className="px-2 py-1 bg-[#3B82F6]/20 text-[#3B82F6] text-[10px] font-bold rounded-lg uppercase tracking-wider flex items-center gap-1">
-                     <Sparkles size={10} /> Best
-                   </div>
-                 </div>
-              )}
-           </div>
+                </div>
+             </div>
 
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
