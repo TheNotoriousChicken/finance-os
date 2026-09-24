@@ -61,10 +61,89 @@ export default async function AccountsPage() {
       )}
 
       {/* Credit Cards */}
-      {creditCards.length > 0 && (
+      {creditCards.length > 0 && (() => {
+        // Group logic
+        const groups: Record<string, typeof creditCards> = {};
+        const standalones: typeof creditCards = [];
+        
+        creditCards.forEach(c => {
+          if (c.sharedLimitGroupId) {
+            if (!groups[c.sharedLimitGroupId]) groups[c.sharedLimitGroupId] = [];
+            groups[c.sharedLimitGroupId].push(c);
+          } else {
+            standalones.push(c);
+          }
+        });
+        
+        return (
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
           <p className="leading-relaxed text-[11px] font-bold text-[#52525B] uppercase tracking-widest px-1">Credit Cards</p>
-          {creditCards.map(card => {
+          
+          {/* Shared Limits */}
+          {Object.entries(groups).map(([groupId, cards]) => {
+            const limit = cards[0].limitPaise ?? 0;
+            const totalOutstanding = cards.reduce((sum, c) => sum + c.outstandingPaise, 0);
+            const utilPct = limit > 0 ? Math.round((totalOutstanding / limit) * 100) : 0;
+            const available = limit - totalOutstanding;
+            
+            return (
+              <div key={groupId} className="minimal-card rounded-2xl p-5 border border-[#9333EA]/20 bg-[#9333EA]/5">
+                <div className="flex items-start justify-between mb-5">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-[#9333EA]/10">
+                      <CreditCard size={18} className="text-[#9333EA]" />
+                    </div>
+                    <div>
+                      <p className="text-[14px] font-bold text-slate-200">Shared Limit ({groupId})</p>
+                      <p className="leading-relaxed text-[12px] text-[#52525B] mt-0.5">{cards.length} linked cards</p>
+                    </div>
+                  </div>
+                  <span className="leading-relaxed text-xs font-bold px-2.5 py-1 rounded-full"
+                    style={{ background: utilPct > 75 ? 'rgba(255,71,87,0.1)' : 'rgba(147,51,234,0.1)', color: utilPct > 75 ? '#FF4757' : '#c084fc' }}>
+                    {utilPct}%
+                  </span>
+                </div>
+                
+                <div className="h-1.5 rounded-full overflow-hidden mb-4" style={{ background: 'rgba(255,255,255,0.07)' }}>
+                  <div className="h-full rounded-full transition-all duration-1000"
+                    style={{ width: `${Math.min(100, utilPct)}%`, background: utilPct > 75 ? '#FF4757' : '#c084fc' }}
+                  />
+                </div>
+                
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "12px", marginBottom: "16px" }}>
+                  <div>
+                    <p className="leading-relaxed text-[11px] text-[#52525B] uppercase tracking-wider">Total Outstanding</p>
+                    <p className="tabular-nums text-[15px] font-bold text-slate-200 mt-0.5">{formatPaise(totalOutstanding)}</p>
+                  </div>
+                  <div>
+                    <p className="leading-relaxed text-[11px] text-[#52525B] uppercase tracking-wider">Shared Limit</p>
+                    <p className="tabular-nums text-[15px] font-bold text-[#c084fc] mt-0.5">{formatPaise(limit)}</p>
+                  </div>
+                </div>
+                
+                <div className="space-y-2 border-t border-[#27272A] pt-4">
+                  <p className="text-[11px] font-bold text-[#52525B] uppercase tracking-widest mb-2">Linked Cards</p>
+                  {cards.map(card => (
+                    <div key={card.id} className="flex justify-between items-center bg-black/40 p-3 rounded-lg border border-[#27272A]">
+                      <div className="flex items-center gap-3">
+                         <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: `${card.color ?? '#ffffff'}15` }}>
+                           <CreditCard size={14} style={{ color: card.color ?? '#A1A1AA' }} />
+                         </div>
+                         <p className="text-[13px] font-bold text-slate-200">{card.name}</p>
+                      </div>
+                      <div className="text-right">
+                         <p className="text-[11px] text-[#52525B] uppercase tracking-wider mb-0.5">Outstanding</p>
+                         <p className="text-[14px] tabular-nums font-bold text-white">{formatPaise(card.outstandingPaise)}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+          
+          {/* Standalone Cards */}
+          {standalones.map(card => {
             const utilPct = card.limitPaise ? Math.round((card.outstandingPaise / card.limitPaise) * 100) : 0;
             const available = (card.limitPaise ?? 0) - card.outstandingPaise;
             return (
@@ -111,7 +190,8 @@ export default async function AccountsPage() {
             );
           })}
         </div>
-      )}
+        );
+      })()}
 
       {/* Other methods */}
       {otherMethods.length > 0 && (
