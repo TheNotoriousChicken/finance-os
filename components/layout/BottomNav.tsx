@@ -1,14 +1,14 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, ArrowLeftRight, Star, BarChart3, CreditCard } from 'lucide-react';
+import { LayoutDashboard, ArrowLeftRight, Star, BarChart3, CreditCard, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/', label: 'Overview', icon: LayoutDashboard },
   { href: '/transactions', label: 'Txns', icon: ArrowLeftRight },
+  { href: '/optimizer', label: 'AI Opt', icon: Sparkles },
   { href: '/accounts', label: 'Accounts', icon: CreditCard },
-  { href: '/analytics', label: 'Analytics', icon: BarChart3 },
   { href: '/rewards', label: 'Rewards', icon: Star },
 ];
 

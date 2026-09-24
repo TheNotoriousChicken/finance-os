@@ -164,3 +164,58 @@ export async function parseSearchIntent(query: string, currentDateStr: string) {
   
   return JSON.parse(response.text || '{}');
 }
+
+
+// -----------------------------
+// OPTIMIZER PARSER
+// -----------------------------
+
+const optimizerSchema: Schema = {
+  type: Type.OBJECT,
+  properties: {
+    intentType: {
+      type: Type.STRING,
+      enum: ['TRANSACTION_OPTIMIZER', 'GENERAL_QUESTION'],
+      description: 'Whether the user is asking to optimize a specific transaction, or asking a general question'
+    },
+    amountPaise: { type: Type.INTEGER, description: 'Amount in paise' },
+    merchant: { type: Type.STRING },
+    category: { type: Type.STRING },
+    isEmi: { type: Type.BOOLEAN },
+    splitUpiAmountPaise: { type: Type.INTEGER, description: 'If the user specifies paying a part via UPI, e.g. "25k UPI and rest on EMI"' },
+    confidenceScore: { type: Type.INTEGER, description: '0-100 score of extraction confidence' },
+    generalQuestion: { type: Type.STRING, description: 'The question if intentType is GENERAL_QUESTION' }
+  },
+  required: ['intentType', 'confidenceScore']
+};
+
+export async function parseOptimizerOrQuestion(text: string) {
+  const response = await ai.models.generateContent({
+    model: MODEL,
+    contents: `Extract the details from this query: "${text}"`,
+    config: {
+      temperature: 0,
+      responseMimeType: 'application/json',
+      responseSchema: optimizerSchema,
+      systemInstruction: 'You parse natural language queries for a financial app. Decide if it is a TRANSACTION_OPTIMIZER (e.g. "4000 at Reliance") or a GENERAL_QUESTION (e.g. "How much of my HDFC limit is left?"). For transactions, extract amount, merchant, category. If they mention EMI, set isEmi to true. If they mention split payment (e.g. 25k UPI), capture splitUpiAmountPaise. For questions, populate generalQuestion.'
+    }
+  });
+
+  return JSON.parse(response.text || '{}');
+}
+
+// -----------------------------
+// AI ASSISTANT CHAT
+// -----------------------------
+
+export async function askFinanceAssistant(query: string, systemContext: string) {
+  const response = await ai.models.generateContent({
+    model: MODEL,
+    contents: query,
+    config: {
+      temperature: 0.2,
+      systemInstruction: systemContext
+    }
+  });
+  return response.text;
+}

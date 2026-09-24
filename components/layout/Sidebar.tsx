@@ -4,11 +4,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, ArrowLeftRight, CreditCard, BarChart3,
-  Star, Target, TrendingUp, Upload, Settings, Wallet
+  Star, Target, TrendingUp, Upload, Settings, Wallet, Sparkles
 } from "lucide-react";
 
 const navItems = [
   { href: "/",            label: "Overview",     icon: LayoutDashboard },
+  { href: "/optimizer",   label: "AI Optimizer", icon: Sparkles        },
   { href: "/transactions", label: "Transactions", icon: ArrowLeftRight  },
   { href: "/accounts",    label: "Accounts",     icon: CreditCard       },
   { href: "/analytics",   label: "Analytics",    icon: BarChart3        },
