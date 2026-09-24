@@ -58,6 +58,9 @@ model PaymentMethod {
   annualFeePaise        Int?
   feeWaiverTargetPaise  Int?
   rewardRuleSetId       String?       // e.g. "MONEYBACK_PLUS"
+  sharedLimitGroupId    String?
+  network               String?       // VISA | MASTERCARD | RUPAY
+  rewardCurrency        String        @default("CASHPOINTS")
   isRewardEligible      Boolean       @default(false)
   cardYearStartDate     String?       // "YYYY-MM-DD"
   isActive              Boolean       @default(true)
@@ -143,6 +146,8 @@ model Transaction {
   parentTransactionId Int?
   cashpointsEarned    Int            @default(0)
   isExcluded          Boolean        @default(false)
+  paymentChannel      String?        // SWIPE | ONLINE | UPI
+  neuCoinsEarned      Float          @default(0)
   createdAt           DateTime       @default(now())
   updatedAt           DateTime       @updatedAt
 
@@ -179,6 +184,11 @@ model RewardRule {
   sourceUrl           String?
   lastVerifiedDate    DateTime?
   isUnverified        Boolean   @default(false)
+  verificationStatus  String    @default("VERIFIED") // VERIFIED | UNVERIFIED | EXPIRED
+  paymentChannel      String?
+  baseRewardRate      Float?
+  acceleratedRewardRate Float?
+  card                String?
   isActive            Boolean   @default(true)
 }
 
@@ -191,6 +201,7 @@ model Reward {
   ruleId          String
   cardMonth       String        // "2026-09"
   cashpointsEarned Int
+  neuCoinsEarned   Float       @default(0)
   isReversed      Boolean       @default(false)
   reversedAt      DateTime?
   createdAt       DateTime      @default(now())
@@ -202,6 +213,7 @@ model RewardRedemption {
   id              Int      @id @default(autoincrement())
   paymentMethodId Int
   cashpointsUsed  Int
+  neuCoinsUsed    Float    @default(0)
   valuePaise      Int
   channel         String   // STATEMENT_CREDIT | CATALOGUE | SMARTBUY_TRAVEL
   redeemedAt      DateTime

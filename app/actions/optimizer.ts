@@ -1,28 +1,99 @@
 'use server';
+import { prisma } from '@/lib/prisma';
+import { calculateCashPoints, estimateRewardValue as getMBValue } from '@/lib/engine/rewards';
+import { calculateNeuCoins } from '@/lib/engine/neuplus';
+import { calculateCombinedUtilization } from '@/lib/engine/utilization';
 
-export async function optimizePaymentAction(merchant: string, amountPaise: number) {
-  // Simple heuristic based on HDFC MoneyBack+ logic vs generic card
+export async function optimizePaymentAction(merchant: string, amountPaise: number, category: string = 'Shopping') {
   const m = merchant.toLowerCase();
+  const c = category.toLowerCase();
   
-  let suggestion = 'Any Credit Card';
-  let reason = 'Standard 1x reward rate applies.';
+  // Exclusions logic
+  const isFuel = m.includes('fuel') || m.includes('petrol') || c.includes('fuel');
+  const isRent = m.includes('rent') || c.includes('rent');
+  const isGovt = m.includes('tax') || m.includes('govt') || c.includes('gov');
+  const isWallet = m.includes('wallet') || c.includes('wallet');
+  const isExcluded = isFuel || isRent || isGovt || isWallet;
 
-  if (m.includes('swiggy') || m.includes('zomato') || m.includes('reliance smart') || m.includes('bigbasket') || m.includes('blinkit') || m.includes('amazon') || m.includes('flipkart')) {
-    suggestion = 'HDFC MoneyBack+ Credit Card';
-    reason = 'This is a 10X CashPoints partner! You will earn 20 points per Rs.200 spent.';
-  } else if (m.includes('fuel') || m.includes('petrol') || m.includes('hpcl') || m.includes('bpcl') || m.includes('ioc')) {
-    suggestion = 'UPI / Cash';
-    reason = 'Fuel purchases are excluded from CashPoints on most cards. Pay via UPI to avoid surcharges.';
-  } else if (m.includes('rent') || m.includes('wallet')) {
-    suggestion = 'UPI / Bank Transfer';
-    reason = 'Rent and wallet loads often incur 1-2% extra charges on credit cards and yield zero rewards.';
-  } else if (amountPaise > 100000) { // > Rs. 1000
-    suggestion = 'HDFC MoneyBack+ Credit Card';
-    reason = 'Use a credit card for larger purchases to maximize base reward points (2 points / Rs.200).';
-  } else {
-    suggestion = 'UPI';
-    reason = 'For smaller transactions, UPI is fast and avoids micro-charges on your credit limit.';
+  // Partner checks
+  const is10x = m.includes('amazon') || m.includes('flipkart') || m.includes('swiggy') || m.includes('reliance smart') || m.includes('bigbasket');
+  const isTata = m.includes('tata') || m.includes('croma') || m.includes('bigbasket') || m.includes('1mg') || m.includes('air india') || m.includes('taj');
+  const isTataNeuApp = isTata && m.includes('neu');
+
+  const paymentMethods = await prisma.paymentMethod.findMany({ where: { isActive: true } });
+  
+  const mbCard = paymentMethods.find(p => p.name.includes('MoneyBack+'));
+  const neuCard = paymentMethods.find(p => p.name.includes('Neu Plus'));
+  const fdCard = paymentMethods.find(p => p.name.includes('FD'));
+  const upiAcc = paymentMethods.find(p => p.type === 'UPI');
+
+  let bestSuggestion = 'UPI / Cash';
+  let bestReason = 'Zero fees. No rewards for this category.';
+  let maxNetValue = 0;
+
+  const options = [];
+
+  // Evaluate MoneyBack+
+  if (mbCard) {
+    const res = calculateCashPoints({
+      amountPaise,
+      paymentMethodId: mbCard.id,
+      moneybackCardId: mbCard.id,
+      merchantNormalizedName: m,
+      categoryName: category,
+      is10xPartner: is10x,
+      isGroceryMerchant: m.includes('reliance smart') || m.includes('bigbasket'),
+      alreadyEarnedOverall: 0,
+      alreadyEarnedGrocery: 0
+    });
+    const valPaise = res.cashpointsEarned * 25; // 0.25 INR per pt
+    const netPaise = valPaise - (isRent ? amountPaise * 0.01 : 0);
+    options.push({ name: 'MoneyBack+', val: netPaise, desc: `Earns ${res.cashpointsEarned} CashPoints.` });
   }
 
-  return { suggestion, reason };
+  // Evaluate Neu Plus (Swipe)
+  if (neuCard) {
+    const res = calculateNeuCoins({
+      amountPaise,
+      paymentMethodId: neuCard.id,
+      neuPlusCardId: neuCard.id,
+      merchantNormalizedName: m,
+      categoryName: category,
+      paymentChannel: 'SWIPE',
+      isTataBrand: isTata,
+      isTataNeuApp: isTataNeuApp,
+      isEmi: false,
+      alreadyEarnedUpi: 0
+    });
+    const valPaise = (res.neuCoinsEarned + res.neuPassAcceleratedEarned) * 100; // 1 INR per coin
+    const netPaise = valPaise - (isRent ? amountPaise * 0.01 : 0);
+    options.push({ name: 'Neu Plus (Swipe/Online)', val: netPaise, desc: `Earns ${res.neuCoinsEarned + res.neuPassAcceleratedEarned} NeuCoins.` });
+  }
+
+  // Evaluate Neu Plus (UPI)
+  if (neuCard) {
+    const res = calculateNeuCoins({
+      amountPaise,
+      paymentMethodId: neuCard.id,
+      neuPlusCardId: neuCard.id,
+      merchantNormalizedName: m,
+      categoryName: category,
+      paymentChannel: 'UPI',
+      isTataBrand: isTata,
+      isTataNeuApp: isTataNeuApp,
+      isEmi: false,
+      alreadyEarnedUpi: 0
+    });
+    const valPaise = (res.neuCoinsEarned + res.neuPassAcceleratedEarned) * 100;
+    options.push({ name: 'Neu Plus (UPI)', val: valPaise, desc: `Earns ${res.neuCoinsEarned + res.neuPassAcceleratedEarned} NeuCoins.` });
+  }
+
+  options.sort((a, b) => b.val - a.val);
+
+  if (options.length > 0 && options[0].val > 0) {
+    bestSuggestion = options[0].name;
+    bestReason = options[0].desc + ` This gives the highest net value.`;
+  }
+
+  return { suggestion: bestSuggestion, reason: bestReason, detailedOptions: options };
 }

@@ -71,6 +71,7 @@ export function QuickEntrySheet({ isOpen, onClose, categories, paymentMethods }:
   const [merchant, setMerchant] = useState('');
   const [type, setType] = useState('EXPENSE');
   const [paymentMethodId, setPaymentMethodId] = useState('');
+  const [paymentChannel, setPaymentChannel] = useState('SWIPE');
   const [categoryId, setCategoryId] = useState('');
   const [notes, setNotes] = useState('');
   const [optSuggestion, setOptSuggestion] = useState<{suggestion: string, reason: string} | null>(null);
@@ -89,7 +90,7 @@ export function QuickEntrySheet({ isOpen, onClose, categories, paymentMethods }:
   useEffect(() => {
     if (!isOpen) {
       setMode('manual'); setPasteText(''); setAmount(''); setMerchant('');
-      setType('EXPENSE'); setPaymentMethodId(''); setCategoryId('');
+      setType('EXPENSE'); setPaymentMethodId(''); setCategoryId(''); setPaymentChannel('SWIPE');
       setNotes(''); setError(''); setOptSuggestion(null);
     }
   }, [isOpen]);
@@ -122,6 +123,13 @@ export function QuickEntrySheet({ isOpen, onClose, categories, paymentMethods }:
             parsed.suggestedCategory.toLowerCase().includes(c.name.toLowerCase())
           );
           if (matchedCat) setCategoryId(matchedCat.id.toString());
+        }
+        if (parsed.paymentChannel) {
+          setPaymentChannel(parsed.paymentChannel);
+        }
+        if (parsed.suggestedMethod) {
+          const matchedPm = paymentMethods.find(p => p.name.toLowerCase().includes(parsed.suggestedMethod.toLowerCase()));
+          if (matchedPm) setPaymentMethodId(matchedPm.id.toString());
         }
         setMode('manual');
       } catch (err: any) {
@@ -318,8 +326,23 @@ export function QuickEntrySheet({ isOpen, onClose, categories, paymentMethods }:
                       placeholder="Select type"
                     />
                 </div>
-
-                {/* Payment method */}
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  <label className={labelClass}>Payment Channel</label>
+                  <CustomSelect
+                      name="paymentChannel"
+                      value={paymentChannel}
+                      onChange={setPaymentChannel}
+                      options={[
+                        { label: 'Swipe / POS', value: 'SWIPE' },
+                        { label: 'Online', value: 'ONLINE' },
+                        { label: 'UPI', value: 'UPI' }
+                      ]}
+                      placeholder="Select..."
+                    />
+                </div>
+                
                 <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                   <label className={labelClass}>Card / UPI</label>
                   <CustomSelect
@@ -332,6 +355,7 @@ export function QuickEntrySheet({ isOpen, onClose, categories, paymentMethods }:
                     />
                 </div>
               </div>
+
 
               {/* Category */}
               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>

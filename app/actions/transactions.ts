@@ -13,6 +13,7 @@ export async function addTransactionAction(formData: FormData) {
   const type = formData.get('type') as string;
   const paymentMethodId = formData.get('paymentMethodId') as string;
   const categoryId = formData.get('categoryId') as string;
+  const paymentChannel = formData.get('paymentChannel') as string;
   const notes = formData.get('notes') as string;
   const dateStr = formData.get('date') as string;
 
@@ -58,6 +59,7 @@ export async function addTransactionAction(formData: FormData) {
       categoryId: catId,
       notes: encryptedNotes,
       cashpointsEarned: 0,
+      paymentChannel: paymentChannel || 'SWIPE',
     }
   });
 

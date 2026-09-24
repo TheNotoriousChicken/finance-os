@@ -52,11 +52,27 @@ export function calculateCombinedUtilization(cards: Array<{
   outstandingPaise: number;
   limitPaise: number | null;
   type: string;
+  sharedLimitGroupId?: string | null;
 }>): CombinedUtilization {
   const creditCards = cards.filter(c => c.type === 'CREDIT_CARD' && c.limitPaise);
   const cardUtils = creditCards.map(calculateCardUtilization);
-  const totalOutstanding = cardUtils.reduce((s, c) => s + c.outstandingPaise, 0);
-  const totalLimit = cardUtils.reduce((s, c) => s + c.limitPaise, 0);
+  
+  let totalOutstanding = 0;
+  let totalLimit = 0;
+  let processedGroups = new Set<string>();
+
+  creditCards.forEach(c => {
+    totalOutstanding += c.outstandingPaise;
+    if (c.sharedLimitGroupId) {
+      if (!processedGroups.has(c.sharedLimitGroupId)) {
+         totalLimit += (c.limitPaise ?? 0);
+         processedGroups.add(c.sharedLimitGroupId);
+      }
+    } else {
+      totalLimit += (c.limitPaise ?? 0);
+    }
+  });
+
   const pct = totalLimit === 0 ? 0 : Math.round((totalOutstanding / totalLimit) * 1000) / 10;
   return {
     totalOutstandingPaise: totalOutstanding,
@@ -66,7 +82,6 @@ export function calculateCombinedUtilization(cards: Array<{
     cards: cardUtils,
   };
 }
-
 export const UTILIZATION_MARKERS = [10, 30, 50, 75, 100] as const;
 
 export const UTILIZATION_EDUCATIONAL_NOTE =
