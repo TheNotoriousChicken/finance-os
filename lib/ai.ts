@@ -7,6 +7,8 @@ const ai = new GoogleGenAI({
 
 const MODEL = 'gemini-3.6-flash';
 
+
+
 const FINANCIAL_PARSER_PROMPT = `You are a transaction-extraction engine for an Indian personal finance app. You parse bank SMS, UPI notifications, and receipt text into structured data. Follow these rules exactly.
 
 ## AMOUNTS
@@ -190,18 +192,41 @@ const optimizerSchema: Schema = {
 };
 
 export async function parseOptimizerOrQuestion(text: string) {
-  const response = await ai.models.generateContent({
-    model: MODEL,
-    contents: `Extract the details from this query: "${text}"`,
-    config: {
-      temperature: 0,
-      responseMimeType: 'application/json',
-      responseSchema: optimizerSchema,
-      systemInstruction: 'You parse natural language queries for a financial app. Decide if it is a TRANSACTION_OPTIMIZER (e.g. "4000 at Reliance") or a GENERAL_QUESTION (e.g. "How much of my HDFC limit is left?"). For transactions, extract amount, merchant, category. If they mention EMI, set isEmi to true. If they mention split payment (e.g. 25k UPI), capture splitUpiAmountPaise. For questions, populate generalQuestion.'
-    }
-  });
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) throw new Error("GEMINI_API_KEY is not set.");
+  
+  const prompt = `You parse natural language queries for a financial app. Decide if it is a TRANSACTION_OPTIMIZER (e.g. "4000 at Reliance") or a GENERAL_QUESTION (e.g. "How much of my HDFC limit is left?"). For transactions, extract amount, merchant, category. If they mention EMI, set isEmi to true. If they mention split payment (e.g. 25k UPI), capture splitUpiAmountPaise. For questions, populate generalQuestion.
+  
+Query: "${text}"
 
-  return JSON.parse(response.text || '{}');
+Respond strictly with a JSON object matching this schema:
+{
+  "intentType": "TRANSACTION_OPTIMIZER" | "GENERAL_QUESTION",
+  "amountPaise": number,
+  "merchant": string,
+  "category": string,
+  "isEmi": boolean,
+  "splitUpiAmountPaise": number,
+  "confidenceScore": number,
+  "generalQuestion": string
+}`;
+
+  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: { temperature: 0, response_mime_type: "application/json" }
+    })
+  });
+  
+  if (!response.ok) {
+    throw new Error(`Gemini API Error: ${response.status} - ${await response.text()}`);
+  }
+  
+  const data = await response.json();
+  const resText = data.candidates[0].content.parts[0].text;
+  return JSON.parse(resText || '{}');
 }
 
 // -----------------------------
@@ -209,13 +234,23 @@ export async function parseOptimizerOrQuestion(text: string) {
 // -----------------------------
 
 export async function askFinanceAssistant(query: string, systemContext: string) {
-  const response = await ai.models.generateContent({
-    model: MODEL,
-    contents: query,
-    config: {
-      temperature: 0.2,
-      systemInstruction: systemContext
-    }
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) throw new Error("GEMINI_API_KEY is not set.");
+
+  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      system_instruction: { parts: [{ text: systemContext }] },
+      contents: [{ parts: [{ text: query }] }],
+      generationConfig: { temperature: 0.2 }
+    })
   });
-  return response.text;
+
+  if (!response.ok) {
+    throw new Error(`Gemini API Error: ${response.status} - ${await response.text()}`);
+  }
+
+  const data = await response.json();
+  return data.candidates[0].content.parts[0].text;
 }
