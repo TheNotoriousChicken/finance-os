@@ -65,6 +65,8 @@ export default function OptimizerPage() {
                   msg.text
                 ) : msg.error ? (
                   <span className="text-red-400">{msg.error}</span>
+                ) : msg.result?.type === 'error' ? (
+                  <span className="text-red-400">{msg.result.error}</span>
                 ) : msg.result?.type === 'chat' ? (
                   <div className="whitespace-pre-wrap">{msg.result.answer}</div>
                 ) : (

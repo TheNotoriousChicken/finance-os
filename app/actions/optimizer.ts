@@ -157,6 +157,8 @@ Do not invent numbers. If you don't know, say so. Keep answers concise.`;
 }
 
 export async function smartOptimizeAction(query: string) {
+  try {
+
   const parsed = await parseOptimizerOrQuestion(query);
   
   if (parsed.intentType === 'GENERAL_QUESTION') {
@@ -253,4 +255,7 @@ export async function smartOptimizeAction(query: string) {
     confidence,
     needsVerification: (m === 'unknown merchant' || confidence === 'Low' || (!isTata && !is10x && !isFuel && !isRent))
   };
+  } catch (err: any) {
+    return { type: 'error', error: err.stack || err.message || String(err) };
+  }
 }
