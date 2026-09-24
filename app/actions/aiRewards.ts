@@ -1,5 +1,28 @@
 'use server';
 
+async function fetchWithRetry(url: string, options: any, maxRetries = 3) {
+  for (let i = 0; i < maxRetries; i++) {
+    const res = await fetch(url, options);
+    if (res.status === 429) {
+      const errorData = await res.json().catch(() => null);
+      let waitMs = 2000 * Math.pow(2, i); // default fallback exponential backoff
+      if (errorData?.error?.message) {
+         // extract "retry in X.Xs" if present
+         const match = errorData.error.message.match(/retry in ([0-9.]+)s/);
+         if (match && match[1]) {
+           waitMs = parseFloat(match[1]) * 1000 + 500; // Add 500ms buffer
+         }
+      }
+      console.warn(`Rate limited (429). Retrying in ${waitMs}ms...`);
+      await new Promise(r => setTimeout(r, waitMs));
+      continue;
+    }
+    return res;
+  }
+  return fetch(url, options); // last attempt
+}
+
+
 export async function classifySpendGemini(merchantDesc: string) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error("GEMINI_API_KEY is not set in Vercel environment variables.");
@@ -27,7 +50,7 @@ Respond ONLY in raw JSON format without markdown blocks:
 }`;
 
   try {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`, {
+    const response = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
