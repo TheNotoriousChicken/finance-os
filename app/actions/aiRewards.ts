@@ -1,19 +1,28 @@
 'use server';
 
+
 async function fetchWithRetry(url: string, options: any, maxRetries = 3) {
   for (let i = 0; i < maxRetries; i++) {
     const res = await fetch(url, options);
-    if (res.status === 429) {
+    if (res.status === 429 || res.status === 503) {
       const errorData = await res.json().catch(() => null);
-      let waitMs = 2000 * Math.pow(2, i); // default fallback exponential backoff
-      if (errorData?.error?.message) {
-         // extract "retry in X.Xs" if present
+      let waitMs = 2000 * Math.pow(2, i); // fallback exponential backoff
+      
+      if (res.status === 429 && errorData?.error?.message) {
          const match = errorData.error.message.match(/retry in ([0-9.]+)s/);
          if (match && match[1]) {
-           waitMs = parseFloat(match[1]) * 1000 + 500; // Add 500ms buffer
+           waitMs = parseFloat(match[1]) * 1000 + 500;
          }
       }
-      console.warn(`Rate limited (429). Retrying in ${waitMs}ms...`);
+      
+      // If Vercel might time out (e.g. wait > 8 seconds), let's just throw 
+      // so the UI can gracefully show the error instead of Vercel giving a 504.
+      if (waitMs > 8000) {
+        console.warn(`Rate limit wait time (${waitMs}ms) is too long for serverless. Throwing.`);
+        return new Response(JSON.stringify(errorData || { error: { message: "Rate limit exceeded. Please try again later." } }), { status: res.status });
+      }
+
+      console.warn(`Gemini ${res.status}. Retrying in ${waitMs}ms...`);
       await new Promise(r => setTimeout(r, waitMs));
       continue;
     }
@@ -50,7 +59,7 @@ Respond ONLY in raw JSON format without markdown blocks:
 }`;
 
   try {
-    const response = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`, {
+    const response = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
