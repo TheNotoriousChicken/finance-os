@@ -11,7 +11,13 @@ import { calculateNeuCoins } from '@/lib/engine/neuplus';
 export default function RewardsCalculatorPage() {
   const [amountStr, setAmountStr] = useState('');
   const [merchantStr, setMerchantStr] = useState('');
-  const [category, setCategory] = useState('Shopping');
+  
+  // AI Outputs
+  const [spendType, setSpendType] = useState<'normal' | '10x' | 'grocery' | 'excluded'>('normal');
+  const [isTataBrand, setIsTataBrand] = useState(false);
+  const [aiReason, setAiReason] = useState<string | null>(null);
+  
+  // Manual overrides
   const [paymentChannel, setPaymentChannel] = useState<'SWIPE' | 'UPI'>('SWIPE');
   const [aiLoading, setAiLoading] = useState(false);
 
@@ -20,16 +26,13 @@ export default function RewardsCalculatorPage() {
   const handleAskGemini = async () => {
     if (!merchantStr.trim()) return;
     setAiLoading(true);
+    setAiReason(null);
     try {
       const res = await classifySpendGemini(merchantStr);
-      // AI action categorizes as normal, 10x, grocery, excluded.
-      // We will map this for both cards.
       setMerchantStr(res.merchant);
-      
-      if (res.type === 'excluded') setCategory('Rent');
-      else if (res.type === 'grocery') setCategory('Groceries');
-      else setCategory('Shopping');
-      
+      setSpendType(res.type);
+      setIsTataBrand(res.isTataBrand || false);
+      setAiReason(res.reason);
     } catch (e) {
       alert(`Failed to analyze with Gemini: ${e instanceof Error ? e.message : String(e)}`);
     } finally {
@@ -37,20 +40,18 @@ export default function RewardsCalculatorPage() {
     }
   };
 
-  // Determine Flags heuristically (similar to what server would do)
-  const mLower = merchantStr.toLowerCase();
-  const cLower = category.toLowerCase();
-  const is10x = mLower.includes('amazon') || mLower.includes('flipkart') || mLower.includes('swiggy') || mLower.includes('reliance smart') || mLower.includes('bigbasket');
-  const isGrocery = mLower.includes('reliance smart') || mLower.includes('bigbasket') || cLower.includes('grocer');
-  const isTata = mLower.includes('tata') || mLower.includes('croma') || mLower.includes('bigbasket') || mLower.includes('1mg') || mLower.includes('air india') || mLower.includes('taj');
+  // Convert AI spendType to an explicit category for the deterministic engine
+  const categoryName = spendType === 'excluded' ? 'Rent' : spendType === 'grocery' ? 'Groceries' : 'Shopping';
+  const is10x = spendType === '10x' || spendType === 'grocery';
+  const isGrocery = spendType === 'grocery';
 
   // HDFC MoneyBack+
   const mbResult = calculateCashPoints({
     amountPaise,
     paymentMethodId: 1, 
     moneybackCardId: 1, 
-    merchantNormalizedName: merchantStr,
-    categoryName: category,
+    merchantNormalizedName: merchantStr || (is10x ? 'amazon' : 'some store'),
+    categoryName,
     is10xPartner: is10x,
     isGroceryMerchant: isGrocery,
     alreadyEarnedOverall: 0,
@@ -64,10 +65,10 @@ export default function RewardsCalculatorPage() {
     amountPaise,
     paymentMethodId: 2,
     neuPlusCardId: 2,
-    merchantNormalizedName: merchantStr,
-    categoryName: category,
+    merchantNormalizedName: merchantStr || (isTataBrand ? 'croma' : 'some store'),
+    categoryName,
     paymentChannel,
-    isTataBrand: isTata,
+    isTataBrand,
     isTataNeuApp: false,
     isEmi: false,
     alreadyEarnedUpi: 0
@@ -89,7 +90,9 @@ export default function RewardsCalculatorPage() {
       </div>
 
       <div className="minimal-card rounded-2xl p-6 mt-4">
-        <div className="flex flex-col sm:flex-row gap-4 mb-4">
+        
+        {/* Input Row */}
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
           <div className="flex-1">
             <label className="leading-relaxed block text-[11px] font-bold text-[#52525B] uppercase tracking-widest mb-2">Amount (₹)</label>
             <div className="relative">
@@ -99,59 +102,86 @@ export default function RewardsCalculatorPage() {
                 value={amountStr}
                 onChange={(e) => setAmountStr(e.target.value)}
                 placeholder="0"
-                className="w-full h-12 pl-8 pr-4 rounded-xl text-lg font-bold text-slate-200 outline-none focus:ring-1 focus:ring-[#00D68F]/50 transition-all"
+                className="w-full h-14 pl-8 pr-4 rounded-xl text-lg font-bold text-slate-200 outline-none focus:ring-1 focus:ring-[#FFD700]/50 transition-all"
                 style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
               />
             </div>
           </div>
           
           <div className="flex-[1.5]">
-            <label className="leading-relaxed block text-[11px] font-bold text-[#52525B] uppercase tracking-widest mb-2">Merchant</label>
+            <label className="leading-relaxed block text-[11px] font-bold text-[#52525B] uppercase tracking-widest mb-2">Merchant Name</label>
             <div className="flex gap-2">
               <input 
                 type="text" 
                 value={merchantStr}
                 onChange={(e) => setMerchantStr(e.target.value)}
-                placeholder="e.g. Amazon, Croma"
-                className="leading-relaxed flex-1 h-12 px-4 rounded-xl text-sm text-slate-200 outline-none focus:ring-1 focus:ring-[#00D68F]/50 transition-all"
+                onKeyDown={(e) => e.key === 'Enter' && handleAskGemini()}
+                placeholder="e.g. Amazon, Croma, Cred Rent"
+                className="leading-relaxed flex-1 h-14 px-4 rounded-xl text-sm text-slate-200 outline-none focus:ring-1 focus:ring-[#9333EA]/50 transition-all"
                 style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
               />
               <button 
                 onClick={handleAskGemini}
-                disabled={aiLoading}
-                className="h-12 px-4 rounded-xl flex items-center justify-center bg-[#9333EA]/10 text-[#c084fc] hover:bg-[#9333EA]/20 transition-all border border-[#9333EA]/20 disabled:opacity-50"
+                disabled={aiLoading || !merchantStr.trim()}
+                className="h-14 px-5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+                style={{ background: 'linear-gradient(135deg, #9333EA 0%, #4F46E5 100%)', color: 'white', border: 'none', boxShadow: '0 4px 15px rgba(147, 51, 234, 0.3)' }}
               >
-                {aiLoading ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />}
+                {aiLoading ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
+                <span className="hidden sm:inline">Ask AI</span>
               </button>
             </div>
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+        {/* AI Explanation Box */}
+        {aiReason && (
+          <div className="mb-6 p-4 rounded-xl flex items-start gap-3 animate-in fade-in slide-in-from-top-2" style={{ background: 'rgba(147, 51, 234, 0.1)', border: '1px solid rgba(147, 51, 234, 0.2)' }}>
+            <Sparkles size={18} className="text-[#A855F7] shrink-0 mt-0.5" />
+            <div>
+              <p className="leading-relaxed text-[13px] text-slate-200 font-bold mb-1">Gemini Analysis</p>
+              <p className="text-[12px] text-[#D8B4FE] leading-relaxed">{aiReason}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Manual Toggles Row (optional overrides) */}
+        <div className="flex flex-col sm:flex-row gap-4 mb-6 pt-4 border-t border-[#27272A]/50">
           <div className="flex-1">
-             <label className="leading-relaxed block text-[11px] font-bold text-[#52525B] uppercase tracking-widest mb-2">Category</label>
+             <label className="leading-relaxed block text-[11px] font-bold text-[#52525B] uppercase tracking-widest mb-2">Reward Tier</label>
              <select 
-               value={category} 
-               onChange={(e) => setCategory(e.target.value)}
-               className="w-full h-12 px-4 rounded-xl text-sm text-slate-200 outline-none focus:ring-1 focus:ring-[#00D68F]/50 transition-all appearance-none"
+               value={spendType} 
+               onChange={(e) => setSpendType(e.target.value as any)}
+               className="w-full h-12 px-4 rounded-xl text-sm text-slate-200 outline-none focus:ring-1 focus:ring-[#9333EA]/50 transition-all appearance-none"
                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
              >
-               <option className="bg-[#121214]" value="Shopping">Shopping</option>
-               <option className="bg-[#121214]" value="Groceries">Groceries</option>
-               <option className="bg-[#121214]" value="Food">Food & Dining</option>
-               <option className="bg-[#121214]" value="Fuel">Fuel</option>
-               <option className="bg-[#121214]" value="Rent">Rent</option>
-               <option className="bg-[#121214]" value="Government">Government / Tax</option>
-               <option className="bg-[#121214]" value="Wallet">Wallet Load</option>
-               <option className="bg-[#121214]" value="Utility">Utility Bills</option>
+               <option className="bg-[#121214]" value="normal">Normal Spend</option>
+               <option className="bg-[#121214]" value="10x">10X Partners</option>
+               <option className="bg-[#121214]" value="grocery">Grocery (10X)</option>
+               <option className="bg-[#121214]" value="excluded">Excluded</option>
              </select>
+          </div>
+          <div className="flex-1">
+             <label className="leading-relaxed block text-[11px] font-bold text-[#52525B] uppercase tracking-widest mb-2">Brand Tag</label>
+             <div 
+               onClick={() => setIsTataBrand(!isTataBrand)}
+               className="w-full h-12 px-4 rounded-xl text-sm text-slate-200 flex items-center justify-between cursor-pointer transition-all"
+               style={{ 
+                 background: isTataBrand ? 'rgba(0, 214, 143, 0.1)' : 'rgba(255,255,255,0.04)', 
+                 border: `1px solid ${isTataBrand ? 'rgba(0, 214, 143, 0.4)' : 'rgba(255,255,255,0.08)'}` 
+               }}
+             >
+               <span>Tata Ecosystem (2%)</span>
+               <div className={`w-4 h-4 rounded-sm flex items-center justify-center ${isTataBrand ? 'bg-[#00D68F]' : 'border border-[#52525B]'}`}>
+                 {isTataBrand && <div className="w-2 h-2 bg-[#0C0C0E] rounded-[1px]"></div>}
+               </div>
+             </div>
           </div>
           <div className="flex-1">
              <label className="leading-relaxed block text-[11px] font-bold text-[#52525B] uppercase tracking-widest mb-2">Method</label>
              <select 
                value={paymentChannel} 
                onChange={(e: any) => setPaymentChannel(e.target.value)}
-               className="w-full h-12 px-4 rounded-xl text-sm text-slate-200 outline-none focus:ring-1 focus:ring-[#00D68F]/50 transition-all appearance-none"
+               className="w-full h-12 px-4 rounded-xl text-sm text-slate-200 outline-none focus:ring-1 focus:ring-[#9333EA]/50 transition-all appearance-none"
                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
              >
                <option className="bg-[#121214]" value="SWIPE">Swipe / Online</option>
@@ -163,13 +193,13 @@ export default function RewardsCalculatorPage() {
         {/* Results */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
            {/* MB+ Result */}
-           <div className={`p-5 rounded-2xl border ${mbValuePaise > neuValuePaise && !mbResult.isExcluded ? 'border-[#FFD700] bg-[#FFD700]/5' : 'border-[#27272A] bg-black/40'} transition-all`}>
+           <div className={`p-5 rounded-2xl border ${mbValuePaise >= neuValuePaise && !mbResult.isExcluded ? 'border-[#FFD700] bg-[#FFD700]/5' : 'border-[#27272A] bg-black/40'} transition-all`}>
               <div className="flex justify-between items-start mb-4">
                  <div>
                    <p className="text-[14px] font-bold text-slate-200">HDFC MoneyBack+</p>
                    {paymentChannel === 'UPI' && <p className="text-[11px] text-[#FF4757] mt-1">Cannot be used for UPI</p>}
                  </div>
-                 {mbValuePaise > neuValuePaise && paymentChannel !== 'UPI' && !mbResult.isExcluded && (
+                 {mbValuePaise >= neuValuePaise && paymentChannel !== 'UPI' && !mbResult.isExcluded && (
                     <div className="px-2 py-1 bg-[#FFD700]/20 text-[#FFD700] text-[10px] font-bold rounded-lg uppercase tracking-wider">Best Yield</div>
                  )}
               </div>
@@ -213,7 +243,7 @@ export default function RewardsCalculatorPage() {
                    <p className="text-[14px] font-bold text-slate-200">Tata Neu Plus</p>
                    {paymentChannel === 'UPI' && <p className="text-[11px] text-[#00D68F] mt-1">UPI Supported</p>}
                  </div>
-                 {neuValuePaise >= mbValuePaise && !neuResult.isExcluded && (
+                 {neuValuePaise > mbValuePaise && !neuResult.isExcluded && (
                     <div className="px-2 py-1 bg-[#00D68F]/20 text-[#00D68F] text-[10px] font-bold rounded-lg uppercase tracking-wider">Best Yield</div>
                  )}
               </div>
@@ -238,7 +268,7 @@ export default function RewardsCalculatorPage() {
                     EXCLUDED: {neuResult.excludedReason || 'Category not eligible.'}
                   </div>
                 )}
-                {isTata && !neuResult.isExcluded && (
+                {isTataBrand && !neuResult.isExcluded && (
                   <div className="p-2 rounded bg-[#00D68F]/10 text-[#00D68F] text-[11px] font-bold">
                     TATA ECOSYSTEM YIELD (2%)
                   </div>

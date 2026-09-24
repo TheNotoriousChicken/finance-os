@@ -461,6 +461,9 @@
   .min-h-dvh {
     min-height: 100dvh;
   }
+  .w-2 {
+    width: calc(var(--spacing) * 2);
+  }
   .w-2\.5 {
     width: calc(var(--spacing) * 2.5);
   }
@@ -707,6 +710,9 @@
   .rounded-3xl {
     border-radius: var(--radius-3xl);
   }
+  .rounded-\[1px\] {
+    border-radius: 1px;
+  }
   .rounded-\[2\.5rem\] {
     border-radius: 2.5rem;
   }
@@ -718,6 +724,9 @@
   }
   .rounded-lg {
     border-radius: var(--radius-lg);
+  }
+  .rounded-sm {
+    border-radius: var(--radius-sm);
   }
   .rounded-xl {
     border-radius: var(--radius-xl);
@@ -777,6 +786,9 @@
   .border-\[\#27272A\]\/50 {
     border-color: color-mix(in oklab, #27272A 50%, transparent);
   }
+  .border-\[\#52525B\] {
+    border-color: #52525B;
+  }
   .border-\[\#FF4757\] {
     border-color: #FF4757;
   }
@@ -821,6 +833,9 @@
   }
   .bg-\[\#0A0A0B\] {
     background-color: #0A0A0B;
+  }
+  .bg-\[\#0C0C0E\] {
+    background-color: #0C0C0E;
   }
   .bg-\[\#00D68F\] {
     background-color: #00D68F;
@@ -1288,8 +1303,14 @@
   .text-\[\#A1A1AA\] {
     color: #A1A1AA;
   }
+  .text-\[\#A855F7\] {
+    color: #A855F7;
+  }
   .text-\[\#D4D4D8\] {
     color: #D4D4D8;
+  }
+  .text-\[\#D8B4FE\] {
+    color: #D8B4FE;
   }
   .text-\[\#E4E4E7\] {
     color: #E4E4E7;
@@ -1521,9 +1542,6 @@
     .hover\:bg-\[\#3F3F46\]:hover {
       background-color: #3F3F46;
     }
-    .hover\:bg-\[\#9333EA\]\/20:hover {
-      background-color: color-mix(in oklab, #9333EA 20%, transparent);
-    }
     .hover\:bg-\[\#18181B\]:hover {
       background-color: #18181B;
     }
@@ -1652,8 +1670,14 @@
   .focus\:ring-\[\#3F3F46\]:focus {
     --tw-ring-color: #3F3F46;
   }
+  .focus\:ring-\[\#9333EA\]\/50:focus {
+    --tw-ring-color: color-mix(in oklab, #9333EA 50%, transparent);
+  }
   .focus\:ring-\[\#FF4757\]:focus {
     --tw-ring-color: #FF4757;
+  }
+  .focus\:ring-\[\#FFD700\]\/50:focus {
+    --tw-ring-color: color-mix(in oklab, #FFD700 50%, transparent);
   }
   .focus\:ring-white:focus {
     --tw-ring-color: var(--color-white);
@@ -1719,6 +1743,9 @@
     }
     .sm\:mx-auto {
       margin-inline: auto;
+    }
+    .sm\:inline {
+      display: inline;
     }
     .sm\:max-w-sm {
       max-width: var(--container-sm);
