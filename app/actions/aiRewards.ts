@@ -36,26 +36,43 @@ export async function classifySpendGemini(merchantDesc: string) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error("GEMINI_API_KEY is not set in Vercel environment variables.");
 
-  const prompt = `You are a rewards classification assistant evaluating spending for two credit cards: HDFC MoneyBack+ and Tata Neu Plus (RuPay).
-The user is spending money at: "${merchantDesc}"
+  const prompt = `You are a rewards classification engine for an Indian personal finance app. The user has two credit cards:
 
-Rules:
-HDFC MoneyBack+:
-- '10x': Amazon, Flipkart, Swiggy, Reliance Smart, BigBasket, Blinkit
-- 'grocery': Reliance Smart, BigBasket
-- 'excluded': Fuel, Rent, Govt, Wallets, EMI
-- 'normal': Everything else
+## CARD 1: HDFC MoneyBack+ Credit Card
+Reward type: CashPoints (1 CashPoint ≈ ₹0.25)
+Earn rates:
+- "10x": 10 CashPoints per ₹200 spent at: Amazon, Flipkart, Swiggy, Reliance Smart, BigBasket, Blinkit
+  - Grocery sub-category ("grocery"): Reliance Smart, BigBasket, Blinkit — same 10x but has a monthly sub-cap of 1000 CashPoints
+- "normal": 2 CashPoints per ₹200 for all other eligible spend
+- "excluded": ZERO rewards for: Fuel, Petrol, Diesel, CNG, Rent, Housing Society Maintenance, Government payments (taxes, challans, passport), Wallet loads (Paytm/PhonePe wallet), Gift cards, EMI transactions, Cash withdrawals, Insurance premiums paid to HDFC
 
-Tata Neu Plus:
-- Earns 2% on Tata Brands (e.g., Tata Neu app, Croma, BigBasket, 1mg, Air India, Taj, Tata Cliq, Titan, Tanishq)
-- 'excluded': Fuel, Rent, Govt, Wallets, EMI
+## CARD 2: Tata Neu Plus HDFC Credit Card (RuPay)
+Reward type: NeuCoins (1 NeuCoin = ₹1 when redeemed on Tata Neu app)
+Earn rates:
+- "tata_brand": 2% NeuCoins on Tata ecosystem brands: Tata Neu app, Croma, BigBasket, 1mg, Air India, Taj Hotels, Tata Cliq, Titan, Tanishq, Tata Play (Tata Sky), Westside, Zudio, Tata Motors showrooms, Starbucks (Tata-operated)
+- "upi_eligible": 1% NeuCoins on UPI transactions at eligible merchants (cap 500 NeuCoins/month), 0% for non-eligible UPI
+- "normal": 1% NeuCoins on all other non-excluded spend
+- "excluded": ZERO rewards for: Fuel, Rent, Government, Wallet loads, EMI, Utility bill payments (electricity/water), Cash, Fees
 
-Respond ONLY in raw JSON format without markdown blocks:
+## YOUR TASK
+Classify this merchant/spend description: "${merchantDesc}"
+
+Output rules:
+- "type" must be one of: "10x", "grocery", "excluded", "normal"
+  - Use "grocery" when merchant is Reliance Smart / BigBasket / Blinkit (they are BOTH 10x AND grocery sub-capped)
+  - Use "10x" when merchant is Amazon / Flipkart / Swiggy (10x partner but NOT grocery)
+  - Use "excluded" when ANY excluded category applies (fuel, rent, govt, wallet, EMI, etc.)
+  - Use "normal" for everything else
+- "isTataBrand" = true if the merchant belongs to the Tata ecosystem (earns 2% on Tata Neu Plus)
+- "merchant" = clean, normalized, title-case merchant name (e.g., "Reliance Smart" not "RELIANCE SMART SUPERSTORE")
+- "reason" = a concise, useful 1–2 sentence explanation mentioning BOTH cards' specific reward outcome
+
+Respond ONLY with valid JSON (no markdown):
 {
-  "type": "10x" | "grocery" | "excluded" | "normal",
-  "isTataBrand": boolean,
-  "merchant": "Cleaned up merchant name",
-  "reason": "Short explanation of the rewards eligibility for both cards"
+  "type": "10x",
+  "isTataBrand": false,
+  "merchant": "string",
+  "reason": "string"
 }`;
 
   try {

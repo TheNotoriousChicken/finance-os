@@ -79,7 +79,7 @@ export default function OptimizerPage() {
                       <div className="p-3 rounded-xl bg-black/40 border border-[#27272A]">
                         <p className="text-[11px] font-bold text-[#52525B] uppercase tracking-wider mb-1">Net Effective Cost</p>
                         <p className="text-[18px] font-bold text-white tabular-nums">{formatPaise(msg.result.bestOption.netCost)}</p>
-                        {msg.result.splitUpiPaise > 0 && <p className="text-[10px] text-[#A1A1AA] mt-1">+ {formatPaise(msg.result.splitUpiPaise)} UPI split</p>}
+                        {msg.result.parsed?.splitUpiPaise > 0 && <p className="text-[10px] text-[#A1A1AA] mt-1">+ {formatPaise(msg.result.parsed.splitUpiPaise)} UPI split</p>}
                       </div>
                       <div className="p-3 rounded-xl bg-black/40 border border-[#27272A]">
                         <p className="text-[11px] font-bold text-[#52525B] uppercase tracking-wider mb-1">Estimated Reward</p>
@@ -90,14 +90,19 @@ export default function OptimizerPage() {
                       </div>
                     </div>
 
-                    <p className="text-[13px] text-[#A1A1AA] mb-1">
-                      <span className="font-bold text-slate-200">Why:</span> {msg.result.bestOption.reason}
-                    </p>
+                    {msg.result.geminiAnalysis && (
+                      <div className="p-3 rounded-xl border border-[#3B82F6]/30 bg-[#3B82F6]/5 text-[13px] text-[#A1A1AA] leading-relaxed">
+                        <p className="text-[10px] font-bold text-[#3B82F6] uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                          <Sparkles size={10} /> AI Analysis
+                        </p>
+                        {msg.result.geminiAnalysis}
+                      </div>
+                    )}
 
                     {msg.result.needsVerification && (
                       <div className="flex gap-2 items-center text-[#FFB547] text-[12px] bg-[#FFB547]/10 p-2 rounded-lg border border-[#FFB547]/20">
                         <AlertTriangle size={14} />
-                        <span>⚠️ Reward eligibility needs verification. Accuracy: {msg.result.confidence}</span>
+                        <span>Treat as estimate — reward eligibility not verified. Confidence: {msg.result.confidence}</span>
                       </div>
                     )}
 

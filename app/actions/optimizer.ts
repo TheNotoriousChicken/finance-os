@@ -141,16 +141,35 @@ export async function askAssistantAction(query: string) {
 
   const hdfcAvail = Math.max(0, hdfcLimit - hdfcTotalOutstanding);
 
-  const context = `You are a financial assistant for this app. Use this deterministic data to answer the user's question accurately.
-User's Cards:
-- HDFC Shared Limit Pool (MoneyBack+ & Tata Neu Plus): Limit Rs.${hdfcLimit/100}, Outstanding Rs.${hdfcTotalOutstanding/100}, Available Rs.${hdfcAvail/100}.
-- HDFC FD Card: Limit Rs.${fdLimit/100}, Outstanding Rs.${fdOut/100}.
-Rewards this month (${cardMonth}):
-- MoneyBack+ CashPoints: ${mbPts} (Cap: 2500 overall, 1000 grocery)
-- Tata NeuCoins: ${neuPts} (UPI earned: ${upiNeuPts} / 500 cap)
-Recent transactions: ${txs.map(t => `${t.date.toISOString().split('T')[0]} - Rs.${t.amountPaise/100} at ${t.merchant?.displayName} via ${t.paymentMethod?.name}`).join('; ')}
+  const context = `You are a concise, accurate financial assistant embedded in a personal finance app for an Indian user.
 
-Do not invent numbers. If you don't know, say so. Keep answers concise.`;
+## USER'S FINANCIAL DATA (current as of now, do NOT fabricate any numbers outside this)
+
+### Credit Cards
+- HDFC Shared Limit Pool (MoneyBack+ + Tata Neu Plus RuPay combined):
+  Total Credit Limit: ₹${(hdfcLimit / 100).toLocaleString('en-IN')}
+  Total Outstanding: ₹${(hdfcTotalOutstanding / 100).toLocaleString('en-IN')}
+  Available Credit: ₹${(hdfcAvail / 100).toLocaleString('en-IN')}
+  Note: MoneyBack+ and Tata Neu Plus SHARE this limit — using one reduces availability for the other.
+- HDFC FD-Backed Card (separate limit): Limit ₹${(fdLimit / 100).toLocaleString('en-IN')}, Outstanding ₹${(fdOut / 100).toLocaleString('en-IN')}
+
+### Rewards This Month (${cardMonth})
+- HDFC MoneyBack+ CashPoints earned: ${mbPts} / 2500 overall cap (grocery sub-cap: 1000/mo)
+- Tata Neu Plus NeuCoins earned: ${neuPts} total (UPI portion: ${upiNeuPts} / 500 UPI cap)
+- CashPoint value: 1 pt ≈ ₹0.25. NeuCoin value: 1 coin = ₹1 on Tata Neu.
+
+### Recent Transactions (last 10)
+${txs.map(t => `  • ${t.date.toISOString().split('T')[0]}: ₹${(t.amountPaise / 100).toLocaleString('en-IN')} at ${t.merchant?.displayName ?? 'Unknown'} via ${t.paymentMethod?.name ?? 'Unknown'}`).join('\n')}
+
+## CARD REWARD RULES (for answering reward-related questions)
+MoneyBack+: 10 pts/₹200 at Amazon/Flipkart/Swiggy/Reliance Smart/BigBasket/Blinkit. 2 pts/₹200 everywhere else. Zero on Fuel/Rent/Govt/Wallets/EMI.
+Tata Neu Plus: 2% NeuCoins on Tata brands (Croma, 1mg, Air India, Taj, Tata Cliq, Titan, Tanishq, BigBasket, Westside, Zudio, Starbucks). 1% on other eligible spend. 1% on UPI (capped 500/mo). Zero on Fuel/Rent/Govt/Wallets/EMI.
+
+## RESPONSE RULES
+- Answer only with data from the context above. Do NOT invent balances, percentages, or transactions.
+- If something is not in the context, say "I don't have that data right now."
+- Be concise. Use ₹ symbol. Use bullet points for comparisons.
+- If asked about utilization, note that MoneyBack+ and Neu Plus share their limit pool.`;
 
   const answer = await askFinanceAssistant(query, context);
   return answer;
@@ -247,12 +266,39 @@ export async function smartOptimizeAction(query: string) {
   if (parsed.confidenceScore < 60) confidence = 'Low';
   else if (parsed.confidenceScore < 85) confidence = 'Medium';
 
+  // Build a human-readable AI analysis summary
+  const best = options[0];
+  const savedPaise = best.valPaise - best.fees - best.emiCost;
+  const merchant_display = parsed.merchant || 'this merchant';
+  let analysisLines: string[] = [];
+  
+  if (best.type === 'CASH') {
+    analysisLines.push(`No reward benefit here — Bank UPI is the cleanest option with zero fees and instant settlement.`);
+  } else {
+    analysisLines.push(`Best choice: ${best.name} saves you ${savedPaise > 0 ? '₹' + (savedPaise / 100).toLocaleString('en-IN') : 'the most'} vs plain UPI.`);
+    if (is10x) analysisLines.push(`MoneyBack+ earns 10X CashPoints at ${merchant_display} — one of its highest-yield partners.`);
+    if (isTata && !is10x) analysisLines.push(`Tata Neu Plus earns 2% NeuCoins here as a Tata brand (worth ₹1 each on Tata Neu app).`);
+    if (isEmi) analysisLines.push(`EMI option costs extra in interest (${15.99}% p.a.) + processing fee — only worth it if cash flow is tight.`);
+    if (splitUpiPaise > 0) analysisLines.push(`UPI split of ₹${(splitUpiPaise / 100).toLocaleString('en-IN')} reduces card utilization.`);
+  }
+  
+  if (isFuel) analysisLines.push(`All cards earn zero rewards on fuel purchases.`);
+  if (isRent) analysisLines.push(`Rent payments incur a ~1.18% processing fee on credit cards — factor this into your net cost.`);
+  
+  const hdfcAvailPaise = Math.max(0, hdfcLimit - hdfcTotalOutstanding);
+  if (cardAmountPaise > hdfcAvailPaise && hdfcAvailPaise > 0) {
+    analysisLines.push(`⚠️ Heads up: your HDFC available credit (₹${(hdfcAvailPaise / 100).toLocaleString('en-IN')}) may be insufficient for this purchase.`);
+  }
+
+  const geminiAnalysis = analysisLines.join(' ');
+
   return {
     type: 'optimizer',
     parsed: { ...parsed, amountPaise, cardAmountPaise, splitUpiPaise, m, category },
     options,
     bestOption: options[0],
     confidence,
+    geminiAnalysis,
     needsVerification: (m === 'unknown merchant' || confidence === 'Low' || (!isTata && !is10x && !isFuel && !isRent))
   };
   } catch (err: any) {

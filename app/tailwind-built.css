@@ -778,6 +778,9 @@
   .border-\[\#3B82F6\] {
     border-color: #3B82F6;
   }
+  .border-\[\#3B82F6\]\/30 {
+    border-color: color-mix(in oklab, #3B82F6 30%, transparent);
+  }
   .border-\[\#4D9EF7\]\/20 {
     border-color: color-mix(in oklab, #4D9EF7 20%, transparent);
   }
