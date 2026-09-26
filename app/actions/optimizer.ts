@@ -161,9 +161,19 @@ export async function askAssistantAction(query: string) {
 ### Recent Transactions (last 10)
 ${txs.map(t => `  • ${t.date.toISOString().split('T')[0]}: ₹${(t.amountPaise / 100).toLocaleString('en-IN')} at ${t.merchant?.displayName ?? 'Unknown'} via ${t.paymentMethod?.name ?? 'Unknown'}`).join('\n')}
 
-## CARD REWARD RULES (for answering reward-related questions)
-MoneyBack+: 10 pts/₹200 at Amazon/Flipkart/Swiggy/Reliance Smart/BigBasket/Blinkit. 2 pts/₹200 everywhere else. Zero on Fuel/Rent/Govt/Wallets/EMI.
-Tata Neu Plus: 2% NeuCoins on Tata brands (Croma, 1mg, Air India, Taj, Tata Cliq, Titan, Tanishq, BigBasket, Westside, Zudio, Starbucks). 1% on other eligible spend. 1% on UPI (capped 500/mo). Zero on Fuel/Rent/Govt/Wallets/EMI.
+## CARD REWARD RULES (for answering reward-related questions accurately)
+MoneyBack+ CashPoints (1 pt ≈ ₹0.25):
+- 10 pts/₹200 at: Amazon, Flipkart, Swiggy, Reliance Smart, BigBasket, Blinkit
+- Grocery sub-cap (Reliance Smart / BigBasket / Blinkit): 1,000 pts/mo maximum
+- Overall cap: 2,500 pts/mo
+- 2 pts/₹200 on everything else eligible
+- ZERO on: Fuel, Rent, Government/taxes, Wallet loads, Gift cards, EMI, IRCTC
+
+Tata Neu Plus NeuCoins (1 coin = ₹1 on Tata Neu app):
+- 2% NeuCoins on Tata brand partners: Croma, BigBasket, 1mg, Air India, Taj Hotels, Tata Cliq, Titan, Tanishq, Tata Play, Westside, Zudio, Starbucks, IHCL
+- 1% NeuCoins on all other eligible swipe/online card spend
+- UPI via Tata Neu app only: 1% NeuCoins, capped at 500 NeuCoins/month — zero if using GPay/PhonePe/Paytm UPI
+- ZERO on: ALL EMI (regardless of brand), Fuel, Rent, Government/taxes, Wallet loads, Utility bills (electricity/gas/water), Insurance premiums, IRCTC
 
 ## RESPONSE RULES
 - Answer only with data from the context above. Do NOT invent balances, percentages, or transactions.
@@ -211,14 +221,24 @@ export async function smartOptimizeAction(query: string) {
     }
   });
   
-  const isFuel = m.includes('fuel') || m.includes('petrol') || category.toLowerCase().includes('fuel');
-  const isRent = m.includes('rent') || category.toLowerCase().includes('rent');
-  const isGovt = m.includes('tax') || m.includes('govt') || category.toLowerCase().includes('gov');
-  const isWallet = m.includes('wallet') || category.toLowerCase().includes('wallet');
-  
+  const catLower = category.toLowerCase();
+  const isFuel = m.includes('fuel') || m.includes('petrol') || m.includes('diesel') || m.includes('cng') || catLower === 'fuel';
+  const isRent = m.includes('rent') || catLower === 'rent' || catLower === 'housing';
+  const isGovt = m.includes('irctc') || m.includes('bbmp') || m.includes('income tax') || catLower === 'government';
+  const isWallet = m.includes('wallet') || catLower === 'wallet';
+  const isInsurance = m.includes('lic') || m.includes('insurance') || catLower === 'insurance';
+  const isUtility = catLower === 'bills' || catLower === 'utilities' || m.includes('electricity') || m.includes('bescom') || m.includes('msedcl') || m.includes('piped gas');
+
   const is10x = m.includes('amazon') || m.includes('flipkart') || m.includes('swiggy') || m.includes('reliance smart') || m.includes('bigbasket') || m.includes('blinkit');
   const isGrocery = m.includes('reliance smart') || m.includes('bigbasket') || m.includes('blinkit');
-  const isTata = m.includes('tata') || m.includes('croma') || m.includes('bigbasket') || m.includes('1mg') || m.includes('air india') || m.includes('taj');
+  // Full Tata brand ecosystem — all earn 2% NeuCoins on Neu Plus
+  const isTata = m.includes('tata') || m.includes('croma') || m.includes('bigbasket') ||
+    m.includes('1mg') || m.includes('air india') || m.includes('taj') ||
+    m.includes('titan') || m.includes('tanishq') || m.includes('westside') ||
+    m.includes('zudio') || m.includes('tata cliq') || m.includes('tata play') ||
+    m.includes('tata sky') || m.includes('starbucks') || m.includes('ihcl');
+  // Tata Neu App UPI = earns NeuCoins via RuPay UPI. Other UPI apps = 0 NeuCoins.
+  const isTataNeuApp = m.includes('tata neu') || m.includes('tataneu');
 
   const options: any[] = [];
 
@@ -241,19 +261,49 @@ export async function smartOptimizeAction(query: string) {
     }
   }
 
-  // Evaluate Neu Plus Swipe
+  // Evaluate Neu Plus Swipe / Online
   if (neuCard) {
-    const { neuCoinsEarned, neuPassAcceleratedEarned, isExcluded } = calculateNeuCoins({ amountPaise: cardAmountPaise, paymentMethodId: neuCard.id, neuPlusCardId: neuCard.id, merchantNormalizedName: m, categoryName: category, paymentChannel: 'SWIPE', isTataBrand: isTata, isTataNeuApp: false, isEmi, alreadyEarnedUpi: 0 });
+    const { neuCoinsEarned, neuPassAcceleratedEarned, isExcluded, excludedReason } = calculateNeuCoins({
+      amountPaise: cardAmountPaise,
+      paymentMethodId: neuCard.id,
+      neuPlusCardId: neuCard.id,
+      merchantNormalizedName: m,
+      categoryName: category,
+      paymentChannel: 'SWIPE',
+      isTataBrand: isTata,
+      isTataNeuApp: false,
+      isEmi,
+      alreadyEarnedUpi: 0,
+    });
     const valPaise = (neuCoinsEarned + neuPassAcceleratedEarned) * 100;
     const fees = isRent ? Math.round(cardAmountPaise * 0.01 * 1.18) : 0;
-    addOption('Tata Neu Plus (Swipe)', 'CREDIT_CARD', neuCoinsEarned + neuPassAcceleratedEarned, valPaise, fees, 0, cardAmountPaise, isExcluded ? 'Excluded category. Zero rewards.' : (isTata ? '2% Tata Brand yield.' : '1% non-Tata yield.'));
+    const reason = isExcluded
+      ? `Excluded: ${excludedReason ?? 'not eligible for NeuCoins'}.`
+      : isTata
+        ? `Earns 2% NeuCoins as a Tata brand partner (${neuCoinsEarned} coins ≈ ₹${neuCoinsEarned}).`
+        : `Earns 1% NeuCoins (${neuCoinsEarned} coins ≈ ₹${neuCoinsEarned}).`;
+    addOption('Tata Neu Plus (Swipe)', 'CREDIT_CARD', neuCoinsEarned + neuPassAcceleratedEarned, valPaise, fees, 0, cardAmountPaise, reason);
   }
 
-  // Evaluate Neu Plus UPI
+  // Evaluate Neu Plus via Tata Neu App UPI (RuPay UPI — earns NeuCoins only via Tata Neu app)
   if (neuCard && !isEmi) {
-    const { neuCoinsEarned, neuPassAcceleratedEarned, isExcluded } = calculateNeuCoins({ amountPaise: cardAmountPaise, paymentMethodId: neuCard.id, neuPlusCardId: neuCard.id, merchantNormalizedName: m, categoryName: category, paymentChannel: 'UPI', isTataBrand: isTata, isTataNeuApp: false, isEmi: false, alreadyEarnedUpi: 0 });
+    const { neuCoinsEarned, neuPassAcceleratedEarned, isExcluded, excludedReason } = calculateNeuCoins({
+      amountPaise: cardAmountPaise,
+      paymentMethodId: neuCard.id,
+      neuPlusCardId: neuCard.id,
+      merchantNormalizedName: m,
+      categoryName: category,
+      paymentChannel: 'UPI',
+      isTataBrand: isTata,
+      isTataNeuApp: true, // Simulate paying via Tata Neu app UPI (where coins are earned)
+      isEmi: false,
+      alreadyEarnedUpi: 0,
+    });
     const valPaise = (neuCoinsEarned + neuPassAcceleratedEarned) * 100;
-    addOption('Tata Neu Plus (UPI)', 'UPI', neuCoinsEarned + neuPassAcceleratedEarned, valPaise, 0, 0, cardAmountPaise, isExcluded ? 'UPI for excluded category.' : 'Earns NeuCoins on UPI (max 500/mo).');
+    const reason = isExcluded
+      ? `UPI excluded: ${excludedReason ?? 'not eligible for NeuCoins'}.`
+      : `Tata Neu app UPI earns ${neuCoinsEarned} NeuCoins ≈ ₹${neuCoinsEarned} (cap: 500/mo). ⚠️ Only via Tata Neu app UPI — not GPay/PhonePe.`;
+    addOption('Tata Neu Plus (Tata Neu UPI)', 'UPI', neuCoinsEarned + neuPassAcceleratedEarned, valPaise, 0, 0, cardAmountPaise, reason);
   }
 
   // Evaluate Bank UPI
@@ -270,27 +320,35 @@ export async function smartOptimizeAction(query: string) {
   const best = options[0];
   const savedPaise = best.valPaise - best.fees - best.emiCost;
   const merchant_display = parsed.merchant || 'this merchant';
-  let analysisLines: string[] = [];
-  
-  if (best.type === 'CASH') {
-    analysisLines.push(`No reward benefit here — Bank UPI is the cleanest option with zero fees and instant settlement.`);
-  } else {
-    analysisLines.push(`Best choice: ${best.name} saves you ${savedPaise > 0 ? '₹' + (savedPaise / 100).toLocaleString('en-IN') : 'the most'} vs plain UPI.`);
-    if (is10x) analysisLines.push(`MoneyBack+ earns 10X CashPoints at ${merchant_display} — one of its highest-yield partners.`);
-    if (isTata && !is10x) analysisLines.push(`Tata Neu Plus earns 2% NeuCoins here as a Tata brand (worth ₹1 each on Tata Neu app).`);
-    if (isEmi) analysisLines.push(`EMI option costs extra in interest (${15.99}% p.a.) + processing fee — only worth it if cash flow is tight.`);
-    if (splitUpiPaise > 0) analysisLines.push(`UPI split of ₹${(splitUpiPaise / 100).toLocaleString('en-IN')} reduces card utilization.`);
-  }
-  
-  if (isFuel) analysisLines.push(`All cards earn zero rewards on fuel purchases.`);
-  if (isRent) analysisLines.push(`Rent payments incur a ~1.18% processing fee on credit cards — factor this into your net cost.`);
-  
   const hdfcAvailPaise = Math.max(0, hdfcLimit - hdfcTotalOutstanding);
+  let analysisLines: string[] = [];
+
+  if (best.type === 'CASH') {
+    if (isFuel || isInsurance || isUtility) {
+      analysisLines.push(`All credit cards earn zero rewards here — Bank UPI or cash is the right call with no fees.`);
+    } else {
+      analysisLines.push(`No card gives a meaningful reward advantage — Bank UPI is cleanest with zero fees and instant settlement.`);
+    }
+  } else {
+    analysisLines.push(`Best choice: ${best.name} saves ₹${Math.max(0, savedPaise / 100).toLocaleString('en-IN')} vs plain UPI.`);
+    if (is10x) analysisLines.push(`MoneyBack+ earns 10X CashPoints at ${merchant_display} — one of its highest-yield partners (10 pts/₹200 ≈ 5% value).`);
+    if (isTata && !is10x) analysisLines.push(`Tata Neu Plus earns 2% NeuCoins as a Tata brand partner — each NeuCoin = ₹1 on Tata Neu app.`);
+    if (isEmi) analysisLines.push(`EMI carries 15.99% p.a. interest + ₹199 processing fee — no rewards earned on EMI.`);
+    if (splitUpiPaise > 0) analysisLines.push(`UPI split of ₹${(splitUpiPaise / 100).toLocaleString('en-IN')} clears instantly, reducing credit utilization.`);
+  }
+
+  if (isFuel) analysisLines.push(`⛽ All cards (MoneyBack+ and Tata Neu Plus) earn zero rewards on fuel. Consider a fuel-specific card for petrol spends.`);
+  if (isRent) analysisLines.push(`🏠 Rent incurs ~1.18% processing fee on credit cards — factor this in. Some rent payment apps waive this.`);
+  if (isInsurance) analysisLines.push(`🛡️ Insurance premiums are excluded from NeuCoins on Tata Neu Plus. Check MoneyBack+ T&C for eligibility.`);
+  if (isUtility) analysisLines.push(`⚡ Utility bills (electricity/gas/water) earn zero NeuCoins on Tata Neu Plus per HDFC T&C 2026.`);
+  if (isGovt) analysisLines.push(`🏛️ Government payments earn zero rewards on both cards.`);
+
   if (cardAmountPaise > hdfcAvailPaise && hdfcAvailPaise > 0) {
-    analysisLines.push(`⚠️ Heads up: your HDFC available credit (₹${(hdfcAvailPaise / 100).toLocaleString('en-IN')}) may be insufficient for this purchase.`);
+    analysisLines.push(`⚠️ Your shared HDFC credit available (₹${(hdfcAvailPaise / 100).toLocaleString('en-IN')}) is less than this purchase — card may decline.`);
   }
 
   const geminiAnalysis = analysisLines.join(' ');
+
 
   return {
     type: 'optimizer',

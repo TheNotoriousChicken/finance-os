@@ -17,6 +17,7 @@ export default function RewardsCalculatorPage() {
   const [analyzedState, setAnalyzedState] = useState<{
     amountPaise: number;
     merchant: string;
+    category: string;
     spendType: 'normal' | '10x' | 'grocery' | 'excluded';
     isTataBrand: boolean;
   } | null>(null);
@@ -34,6 +35,7 @@ export default function RewardsCalculatorPage() {
       setAnalyzedState({
         amountPaise: parsedAmount,
         merchant: res.merchant,
+        category: res.category || (res.type === 'excluded' ? 'Fuel' : res.type === 'grocery' ? 'Food' : 'Shopping'),
         spendType: res.type,
         isTataBrand: res.isTataBrand || false,
       });
@@ -64,10 +66,15 @@ export default function RewardsCalculatorPage() {
   let isTataBrand = false;
 
   if (analyzedState) {
-    const categoryName = analyzedState.spendType === 'excluded' ? 'Rent' : analyzedState.spendType === 'grocery' ? 'Groceries' : 'Shopping';
+    // Use the actual category from Gemini for precise exclusion detection
+    // Fallback: if 'excluded' type but no category stored, default to the exclusion class
+    const categoryName = analyzedState.category ||
+      (analyzedState.spendType === 'excluded' ? 'Fuel' :
+       analyzedState.spendType === 'grocery' ? 'Food' : 'Shopping');
     is10x = analyzedState.spendType === '10x' || analyzedState.spendType === 'grocery';
     const isGrocery = analyzedState.spendType === 'grocery';
     isTataBrand = analyzedState.isTataBrand;
+
 
     // 1. MB+
     mbResult = calculateCashPoints({

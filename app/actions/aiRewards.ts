@@ -66,12 +66,14 @@ Output rules:
 - "isTataBrand" = true if the merchant belongs to the Tata ecosystem (earns 2% on Tata Neu Plus)
 - "merchant" = clean, normalized, title-case merchant name (e.g., "Reliance Smart" not "RELIANCE SMART SUPERSTORE")
 - "reason" = a concise, useful 1–2 sentence explanation mentioning BOTH cards' specific reward outcome
+- "category" = the spending category. Pick one: Food, Shopping, Transport, Housing, Bills, Entertainment, Healthcare, Education, Travel, Subscriptions, Government, Fuel, Rent, Insurance, Other
 
 Respond ONLY with valid JSON (no markdown):
 {
   "type": "10x",
   "isTataBrand": false,
   "merchant": "string",
+  "category": "string",
   "reason": "string"
 }`;
 
@@ -92,7 +94,7 @@ Respond ONLY with valid JSON (no markdown):
     
     const data = await response.json();
     const text = data.candidates[0].content.parts[0].text;
-    return JSON.parse(text) as { type: '10x' | 'grocery' | 'excluded' | 'normal', isTataBrand: boolean, merchant: string, reason: string };
+    return JSON.parse(text) as { type: '10x' | 'grocery' | 'excluded' | 'normal', isTataBrand: boolean, merchant: string, category: string, reason: string };
   } catch (error: any) {
     console.error("AI Classification Error:", error);
     throw new Error(error.message || "Failed to call Gemini API");
