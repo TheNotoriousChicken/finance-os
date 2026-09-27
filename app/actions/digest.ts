@@ -27,17 +27,26 @@ export interface DigestSection {
   accent?: 'green' | 'yellow' | 'red' | 'blue' | 'neutral';
 }
 
-export interface WeeklyDigestResult {
+export interface WeeklyDigestSuccess {
+  ok: true;
   generatedAt: string;
   weekLabel: string;
   sections: DigestSection[];
-  rawInsight: string; // Full Gemini paragraph, displayed below sections
+  rawInsight: string;
 }
 
-export async function weeklyDigestAction(): Promise<WeeklyDigestResult> {
+export interface WeeklyDigestError {
+  ok: false;
+  error: string;
+}
+
+export type WeeklyDigestResponse = WeeklyDigestSuccess | WeeklyDigestError;
+
+export async function weeklyDigestAction(): Promise<WeeklyDigestResponse> {
+  try {
   const now = new Date();
   const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error('GEMINI_API_KEY not set');
+  if (!apiKey) return { ok: false, error: 'GEMINI_API_KEY not configured.' };
 
   // ── Date boundaries ──────────────────────────────────────────────────
   const weekStart = new Date(now);
@@ -164,7 +173,7 @@ Write 3–4 SHORT, punchy insight paragraphs. Each should be useful and actionab
 Tone: Direct, confident, like a smart friend who knows finance — not a corporate bot. Use ₹ symbol. Keep it under 150 words total. No bullet points, just flowing prose paragraphs. No generic advice — every sentence must reference specific numbers from the data.`;
 
   const response = await fetchWithRetry(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiKey}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -176,12 +185,12 @@ Tone: Direct, confident, like a smart friend who knows finance — not a corpora
   );
 
   if (!response.ok) {
-    const err = await response.text();
-    throw new Error(`Gemini error: ${response.status} — ${err}`);
+    const err = await response.text().catch(() => response.statusText);
+    return { ok: false, error: `Gemini error (${response.status}): ${err.slice(0, 200)}` };
   }
 
   const data = await response.json();
-  const rawInsight: string = data.candidates?.[0]?.content?.parts?.[0]?.text ?? 'No insights generated.';
+  const rawInsight: string = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? 'Insights unavailable right now.';
 
   // ── Build structured sections from deterministic data ────────────────
   const sections: DigestSection[] = [];
@@ -237,9 +246,14 @@ Tone: Direct, confident, like a smart friend who knows finance — not a corpora
   const weekLabel = `${weekStart.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })} – ${now.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}`;
 
   return {
+    ok: true,
     generatedAt: now.toISOString(),
     weekLabel,
     sections,
     rawInsight,
   };
+  } catch (err: any) {
+    console.error('[weeklyDigestAction] Error:', err);
+    return { ok: false, error: err?.message ?? 'Failed to generate digest. Try again.' };
+  }
 }

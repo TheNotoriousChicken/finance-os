@@ -1,11 +1,11 @@
 'use client';
 import { useState, useTransition, useRef, useEffect } from 'react';
 import { smartOptimizeAction } from '@/app/actions/optimizer';
-import { weeklyDigestAction, type WeeklyDigestResult } from '@/app/actions/digest';
+import { weeklyDigestAction, type WeeklyDigestResponse, type WeeklyDigestSuccess } from '@/app/actions/digest';
 import { formatPaise } from '@/lib/money';
 import {
   Sparkles, AlertTriangle, Loader2, Send,
-  TrendingUp, TrendingDown, RefreshCw,
+  RefreshCw,
 } from 'lucide-react';
 
 const ACCENT_STYLES = {
@@ -22,18 +22,20 @@ export default function OptimizerPage() {
   const [isPending, startTransition] = useTransition();
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  // Digest state
-  const [digest, setDigest] = useState<WeeklyDigestResult | null>(null);
+  // Single state holds success or error — never throws to React
+  const [digestResponse, setDigestResponse] = useState<WeeklyDigestResponse | null>(null);
   const [digestLoading, setDigestLoading] = useState(true);
-  const [digestError, setDigestError] = useState<string | null>(null);
 
-  // Auto-load digest on mount
-  useEffect(() => {
+  const loadDigest = () => {
+    setDigestLoading(true);
     weeklyDigestAction()
-      .then(setDigest)
-      .catch(e => setDigestError(e.message ?? 'Failed to load digest'))
+      .then(res => setDigestResponse(res))
+      .catch(() => setDigestResponse({ ok: false, error: 'Network error — check your connection.' }))
       .finally(() => setDigestLoading(false));
-  }, []);
+  };
+
+  // Auto-load on mount
+  useEffect(() => { loadDigest(); }, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -57,14 +59,7 @@ export default function OptimizerPage() {
     });
   };
 
-  const refreshDigest = () => {
-    setDigestLoading(true);
-    setDigestError(null);
-    weeklyDigestAction()
-      .then(setDigest)
-      .catch(e => setDigestError(e.message ?? 'Failed to load digest'))
-      .finally(() => setDigestLoading(false));
-  };
+
 
   return (
     <div className="max-w-3xl mx-auto pb-10 page-enter flex flex-col gap-5">
@@ -85,12 +80,12 @@ export default function OptimizerPage() {
         <div className="flex items-center justify-between px-5 pt-4 pb-0">
           <div className="flex items-center gap-2">
             <span className="text-[11px] font-bold text-[#52525B] uppercase tracking-widest">Weekly Digest</span>
-            {digest && (
-              <span className="text-[10px] text-[#3B3B3B] tabular-nums">{digest.weekLabel}</span>
+            {digestResponse?.ok && (
+              <span className="text-[10px] text-[#3B3B3B] tabular-nums">{digestResponse.weekLabel}</span>
             )}
           </div>
           <button
-            onClick={refreshDigest}
+            onClick={loadDigest}
             disabled={digestLoading}
             className="w-7 h-7 rounded-lg flex items-center justify-center text-[#52525B] hover:text-white hover:bg-white/5 transition-colors disabled:opacity-40"
             title="Refresh digest"
@@ -100,7 +95,7 @@ export default function OptimizerPage() {
         </div>
 
         <div className="p-5 flex flex-col gap-4">
-          {/* Loading state */}
+          {/* Loading */}
           {digestLoading && (
             <div className="flex items-center gap-3 text-[#52525B] text-sm py-4">
               <Loader2 size={16} className="animate-spin text-[#00D68F]" />
@@ -108,16 +103,16 @@ export default function OptimizerPage() {
             </div>
           )}
 
-          {/* Error state */}
-          {!digestLoading && digestError && (
-            <p className="text-[#FF4757] text-sm">{digestError}</p>
+          {/* Error */}
+          {!digestLoading && digestResponse && !digestResponse.ok && (
+            <p className="text-[#FF4757] text-[13px] py-2">{digestResponse.error}</p>
           )}
 
-          {/* Stat tiles */}
-          {!digestLoading && digest && (
+          {/* Success */}
+          {!digestLoading && digestResponse?.ok && (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                {digest.sections.map((s, i) => {
+                {digestResponse.sections.map((s, i) => {
                   const style = ACCENT_STYLES[s.accent ?? 'neutral'];
                   return (
                     <div key={i} className={`rounded-xl border ${style.border} ${style.bg} p-3`}>
@@ -139,7 +134,7 @@ export default function OptimizerPage() {
                   <Sparkles size={10} /> Gemini's Take
                 </p>
                 <p className="text-[13px] text-[#A1A1AA] leading-relaxed whitespace-pre-wrap">
-                  {digest.rawInsight}
+                  {digestResponse.rawInsight}
                 </p>
               </div>
             </>
